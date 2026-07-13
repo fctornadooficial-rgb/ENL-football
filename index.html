@@ -304,6 +304,14 @@
         .btn-red:hover {
             background: rgba(180, 40, 40, 0.35);
         }
+        .btn-green {
+            background: linear-gradient(135deg, #2ecc71, #1a8a4a);
+            color: #fff;
+        }
+        .btn-green:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(46, 204, 113, 0.3);
+        }
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -543,7 +551,7 @@
         }
         .match-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 12px;
             margin: 12px 0;
         }
@@ -563,6 +571,24 @@
             color: #f5d742;
             font-weight: 700;
         }
+        .sim-badge {
+            background: rgba(74, 138, 184, 0.15);
+            color: #4a8ab8;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 10px;
+            font-weight: 600;
+            border: 1px solid rgba(74, 138, 184, 0.2);
+        }
+        .player-badge {
+            background: rgba(218, 165, 32, 0.15);
+            color: #f5d742;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 10px;
+            font-weight: 600;
+            border: 1px solid rgba(184, 134, 11, 0.2);
+        }
         @media (max-width: 768px) {
             .game-container { padding: 16px; }
             .header { flex-direction: column; align-items: flex-start; }
@@ -570,13 +596,17 @@
             .bracket { min-width: 650px; }
             .wheel-wrapper { width: 220px; height: 220px; }
             .modal { padding: 24px; }
+            .match-grid { grid-template-columns: 1fr; }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
 <div class="game-container" id="app">
-    <!-- ШАПКА -->
     <div class="header">
         <div class="logo">
             <h1>⚽ ЕНЛ 256</h1>
@@ -591,7 +621,6 @@
         </div>
     </div>
 
-    <!-- ГЛАВНАЯ -->
     <div id="screen-menu" class="screen active">
         <div style="text-align:center; padding:40px 20px;">
             <h1 style="font-size:54px; margin-bottom:6px;">⚽</h1>
@@ -615,7 +644,6 @@
         </div>
     </div>
 
-    <!-- КОМАНДЫ -->
     <div id="screen-teams" class="screen">
         <h2 style="margin-bottom:12px; color:#f5d742;">📋 Выберите команду</h2>
         <p style="color:#b8956a; font-size:14px; margin-bottom:16px;">256 команд. Рейтинг 0.010–5.000. <span style="color:#f5d742;">⭐ Российские команды отмечены</span></p>
@@ -623,14 +651,12 @@
         <div id="selected-team-info" style="margin-top:18px;"></div>
     </div>
 
-    <!-- ТУРНИР -->
     <div id="screen-tournament" class="screen">
         <div id="tournament-content">
             <p style="color:#b8956a; text-align:center; padding:40px 0;">Выберите команду, чтобы начать турнир</p>
         </div>
     </div>
 
-    <!-- СЕТКА -->
     <div id="screen-bracket" class="screen">
         <h2 style="margin-bottom:12px; color:#f5d742;">🏆 Сетка плей-офф</h2>
         <div id="bracket-content" class="bracket-container">
@@ -638,7 +664,6 @@
         </div>
     </div>
 
-    <!-- МОДАЛКА -->
     <div class="modal-overlay" id="modal">
         <div class="modal" id="modal-content"></div>
     </div>
@@ -699,13 +724,11 @@
         'Куба': '🇨🇺', 'Доминика': '🇩🇲', 'Сент-Китс': '🇰🇳'
     };
 
-    // ==================== 256 КОМАНД (все страны) ====================
+    // ==================== 256 КОМАНД ====================
     const TEAMS_DATA = [
-        // Россия
         { country: 'Россия', name: 'ФК Торнадо', rating: 5.000 },
         { country: 'Россия', name: 'Зенит', rating: 4.815 },
         { country: 'Россия', name: 'Ночные Волки', rating: 4.000 },
-        // Европа
         { country: 'Испания', name: 'Реал Мадрид', rating: 4.990 },
         { country: 'Германия', name: 'Бавария', rating: 4.981 },
         { country: 'Англия', name: 'Манчестер Сити', rating: 4.971 },
@@ -759,7 +782,6 @@
         { country: 'Швейцария', name: 'Янг Бойз', rating: 4.450 },
         { country: 'Люксембург', name: 'Дюделанж', rating: 3.750 },
         { country: 'Монако', name: 'ФК Монако', rating: 4.300 },
-        // Америка
         { country: 'Бразилия', name: 'Фламенго', rating: 4.922 },
         { country: 'Аргентина', name: 'Бока Хуниорс', rating: 4.912 },
         { country: 'Мексика', name: 'Америка', rating: 4.200 },
@@ -780,7 +802,6 @@
         { country: 'Тринидад', name: 'Сан-Хуан', rating: 3.500 },
         { country: 'Куба', name: 'ФК Гавана', rating: 3.400 },
         { country: 'Доминикана', name: 'ФК Санто-Доминго', rating: 3.350 },
-        // Азия
         { country: 'Казахстан', name: 'Астана', rating: 4.571 },
         { country: 'Узбекистан', name: 'Пахтакор', rating: 4.561 },
         { country: 'Саудовская Аравия', name: 'Аль-Хиляль', rating: 4.552 },
@@ -805,7 +826,6 @@
         { country: 'Монголия', name: 'Улан-Батор', rating: 3.300 },
         { country: 'Гонконг', name: 'Китчи', rating: 3.350 },
         { country: 'Тайвань', name: 'Тайбэй Сити', rating: 3.300 },
-        // Африка
         { country: 'Египет', name: 'Аль-Ахли', rating: 4.522 },
         { country: 'Тунис', name: 'Эсперанс', rating: 4.513 },
         { country: 'ЮАР', name: 'Кайзер Чифс', rating: 4.503 },
@@ -853,7 +873,6 @@
         { country: 'Ливия', name: 'Аль-Иттихад', rating: 4.249 },
         { country: 'Руанда', name: 'Сонгс', rating: 4.093 },
         { country: 'Малави', name: 'Уондерерс', rating: 4.113 },
-        // Океания
         { country: 'Новая Зеландия', name: 'Окленд Сити', rating: 3.538 },
         { country: 'Австралия', name: 'Сидней', rating: 3.508 },
         { country: 'Фиджи', name: 'Мэджик', rating: 3.645 },
@@ -864,7 +883,6 @@
         { country: 'Самоа', name: 'Тафуна', rating: 3.674 },
         { country: 'Таити', name: 'Тефана', rating: 3.500 },
         { country: 'Новая Каледония', name: 'Хьенгене', rating: 3.480 },
-        // Остальные страны из FLAGS
         { country: 'Мальдивы', name: 'Вилла', rating: 3.996 },
         { country: 'Бангладеш', name: 'Абахани', rating: 3.976 },
         { country: 'Непал', name: 'Катманду', rating: 3.947 },
@@ -913,7 +931,6 @@
         { country: 'Йемен', name: 'Аль-Ахли', rating: 3.400 },
     ];
 
-    // Добавляем недостающие страны
     const allCountries = Object.keys(FLAGS);
     const usedCountries = new Set(TEAMS_DATA.map(t => t.country));
     const missingCountries = allCountries.filter(c => !usedCountries.has(c));
@@ -925,7 +942,6 @@
         });
     });
 
-    // ==================== ИНИЦИАЛИЗАЦИЯ ====================
     let teams = TEAMS_DATA.map((t, idx) => ({
         ...t,
         id: idx,
@@ -933,16 +949,13 @@
         originalRating: t.rating
     }));
 
-    // Сортируем по рейтингу
     teams.sort((a, b) => b.rating - a.rating);
     teams.forEach((t, idx) => t.id = idx);
 
     const russianTeamNames = ['ФК Торнадо', 'Зенит', 'Ночные Волки'];
     const russianTeamIds = teams.filter(t => russianTeamNames.includes(t.name)).map(t => t.id);
-
     function isRussian(id) { return russianTeamIds.includes(id); }
 
-    // ==================== СОСТОЯНИЕ ====================
     let state = {
         myTeamId: null,
         stage: 'menu',
@@ -957,7 +970,7 @@
         isEliminated: false,
         tournamentCompleted: false,
         generatingKnockout: false,
-        matchResults: {} // Сохраняем результаты матчей
+        matchResults: {}
     };
 
     function loadState() {
@@ -966,7 +979,6 @@
             if (saved) {
                 const parsed = JSON.parse(saved);
                 state = { ...state, ...parsed };
-                // Восстанавливаем рейтинги
                 if (parsed.teamRatings) {
                     teams.forEach(t => {
                         if (parsed.teamRatings[t.id] !== undefined) {
@@ -987,7 +999,6 @@
         } catch(e) {}
     }
 
-    // ==================== ВСПОМОГАТЕЛЬНЫЕ ====================
     function getTeam(id) { return teams.find(t => t.id === id); }
     function getMyTeam() { return state.myTeamId !== null ? getTeam(state.myTeamId) : null; }
     function getRating(id) { const t = getTeam(id); return t ? t.rating : 2.5; }
@@ -1019,7 +1030,66 @@
 
     function closeModal() { document.getElementById('modal').classList.remove('show'); }
 
-    // ==================== МАТЧ С КОЛЕСОМ ====================
+    // ==================== СИМУЛЯЦИЯ МАТЧА ====================
+    function simulateMatch(homeId, awayId) {
+        const homeRating = getRating(homeId);
+        const awayRating = getRating(awayId);
+        const diff = homeRating - awayRating;
+        let homeWinProb = 1 / (1 + Math.exp(-diff * 1.5));
+        homeWinProb = Math.min(Math.max(homeWinProb, 0.05), 0.95);
+        
+        if (Math.random() < 0.15) {
+            const drawScores = [0, 1, 2, 3];
+            const score = drawScores[Math.floor(Math.random() * drawScores.length)];
+            return { home: score, away: score, isDraw: true };
+        }
+        
+        const rand = Math.random();
+        let homeGoals, awayGoals;
+        if (rand < homeWinProb) {
+            homeGoals = Math.floor(Math.random() * 3) + 1;
+            awayGoals = Math.floor(Math.random() * 2);
+            if (Math.random() < 0.15 && homeWinProb > 0.6) homeGoals += 1;
+        } else {
+            awayGoals = Math.floor(Math.random() * 3) + 1;
+            homeGoals = Math.floor(Math.random() * 2);
+            if (Math.random() < 0.15 && (1 - homeWinProb) > 0.6) awayGoals += 1;
+        }
+        if (homeGoals === awayGoals) homeGoals += 1;
+        homeGoals = Math.min(homeGoals, 8);
+        awayGoals = Math.min(awayGoals, 8);
+        return { home: homeGoals, away: awayGoals, isDraw: false };
+    }
+
+    function applyMatchResult(match, table) {
+        const result = simulateMatch(match.home, match.away);
+        match.homeScore = result.home;
+        match.awayScore = result.away;
+        match.isDraw = result.isDraw || false;
+        match.played = true;
+        
+        const homeRow = table.find(r => r.id === match.home);
+        const awayRow = table.find(r => r.id === match.away);
+        if (homeRow) {
+            homeRow.played++;
+            homeRow.gf += result.home;
+            homeRow.ga += result.away;
+            homeRow.gd = homeRow.gf - homeRow.ga;
+            if (result.home > result.away) homeRow.pts += 3;
+            else if (result.home === result.away) homeRow.pts += 1;
+        }
+        if (awayRow) {
+            awayRow.played++;
+            awayRow.gf += result.away;
+            awayRow.ga += result.home;
+            awayRow.gd = awayRow.gf - awayRow.ga;
+            if (result.away > result.home) awayRow.pts += 3;
+            else if (result.home === result.away) awayRow.pts += 1;
+        }
+        return result;
+    }
+
+    // ==================== КОЛЕСО ФОРТУНЫ ДЛЯ ИГРОКА ====================
     function showWheelMatch(homeId, awayId, matchIndex, groupIdx) {
         const homeTeam = getTeam(homeId);
         const awayTeam = getTeam(awayId);
@@ -1048,7 +1118,7 @@
             <button class="spin-btn" id="spinBtn">🎡 КРУТИТЬ!</button>
             <div id="wheelResult" style="margin-top:12px; font-size:20px; font-weight:700; min-height:40px;"></div>
             <div style="margin-top:12px;">
-                <button class="btn btn-gold" id="confirmResultBtn" style="display:none;" onclick="confirmMatchResult(${homeId}, ${awayId}, ${matchIndex}, ${groupIdx})">
+                <button class="btn btn-gold" id="confirmResultBtn" style="display:none;" onclick="confirmPlayerMatchResult(${homeId}, ${awayId}, ${matchIndex}, ${groupIdx})">
                     ✅ Подтвердить результат
                 </button>
                 <button class="btn btn-blue" onclick="closeModal(); renderTournament();" style="margin-left:8px;">⬅ Назад</button>
@@ -1088,7 +1158,6 @@
                     ctx.lineWidth = 2;
                     ctx.stroke();
                     
-                    // Текст
                     ctx.save();
                     ctx.translate(cx, cy);
                     ctx.rotate(start + sectorAngle / 2);
@@ -1102,7 +1171,6 @@
                     ctx.restore();
                 });
                 
-                // Стрелка
                 ctx.save();
                 ctx.translate(cx, cy);
                 ctx.rotate(angle);
@@ -1117,7 +1185,6 @@
                 ctx.fill();
                 ctx.restore();
                 
-                // Центр
                 ctx.beginPath();
                 ctx.arc(cx, cy, 16, 0, 2 * Math.PI);
                 ctx.fillStyle = '#b8860b';
@@ -1152,14 +1219,11 @@
                         spinBtn.disabled = false;
                         spinBtn.textContent = '🎡 КРУТИТЬ!';
                         
-                        // Определяем результат
                         const sectorAngle = (2 * Math.PI) / sectors.length;
-                        // Нормализуем угол
                         let normalized = currentAngle % (2 * Math.PI);
                         if (normalized < 0) normalized += 2 * Math.PI;
                         
-                        // Находим сектор (с учетом того что стрелка сверху)
-                        const pointerAngle = 0; // Стрелка сверху
+                        const pointerAngle = 0;
                         let relativeAngle = (2 * Math.PI - normalized + pointerAngle) % (2 * Math.PI);
                         const sectorIndex = Math.floor(relativeAngle / sectorAngle) % sectors.length;
                         
@@ -1174,7 +1238,6 @@
                         `;
                         document.getElementById('confirmResultBtn').style.display = 'inline-block';
                         
-                        // Сохраняем результат
                         state.matchResults[`${homeId}_${awayId}`] = result.value;
                         saveState();
                         return;
@@ -1195,7 +1258,7 @@
         }, 100);
     }
 
-    function confirmMatchResult(homeId, awayId, matchIndex, groupIdx) {
+    function confirmPlayerMatchResult(homeId, awayId, matchIndex, groupIdx) {
         const result = state.matchResults[`${homeId}_${awayId}`];
         if (!result) return;
 
@@ -1205,7 +1268,6 @@
         const match = group.matches[matchIndex];
         if (!match) return;
 
-        // Определяем счет на основе результата
         let homeScore, awayScore;
         if (result === 'win') {
             homeScore = Math.floor(Math.random() * 3) + 2;
@@ -1213,21 +1275,18 @@
         } else if (result === 'draw') {
             homeScore = Math.floor(Math.random() * 3) + 1;
             awayScore = homeScore;
-        } else { // lose
+        } else {
             awayScore = Math.floor(Math.random() * 3) + 2;
             homeScore = Math.floor(Math.random() * 2);
         }
 
-        // Обновляем матч
         match.homeScore = homeScore;
         match.awayScore = awayScore;
         match.played = true;
         match.isDraw = (homeScore === awayScore);
 
-        // Обновляем таблицу
         const homeRow = group.table.find(r => r.id === homeId);
         const awayRow = group.table.find(r => r.id === awayId);
-        
         if (homeRow) {
             homeRow.played++;
             homeRow.gf += homeScore;
@@ -1245,13 +1304,17 @@
             else if (homeScore === awayScore) awayRow.pts += 1;
         }
 
-        // Проверяем завершение группы
+        checkGroupCompletion(group);
+        saveState();
+        closeModal();
+        renderTournament();
+        updateMenu();
+    }
+
+    function checkGroupCompletion(group) {
         const totalMatches = group.matches.length;
         const played = group.matches.filter(m => m.played).length;
-        const isFinished = played >= totalMatches;
-        
-        if (isFinished) {
-            state.groupStageFinished = true;
+        if (played >= totalMatches) {
             const sorted = [...group.table].sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
             const top4 = sorted.slice(0, 4).map(r => r.id);
             state.group.top4 = top4;
@@ -1259,15 +1322,30 @@
             if (myTeam && !top4.includes(myTeam.id)) {
                 state.isEliminated = true;
             }
+            state.groupStageFinished = true;
+            
+            // Симулируем оставшиеся матчи в других группах
+            simulateRemainingGroupMatches();
         }
-
-        saveState();
-        closeModal();
-        renderTournament();
-        updateMenu();
     }
 
-    // ==================== МЕНЮ ====================
+    function simulateRemainingGroupMatches() {
+        const groups = state.group.groups;
+        const myTeamId = state.myTeamId;
+        
+        groups.forEach((g, gi) => {
+            if (g.matches.some(m => !m.played)) {
+                const unplayed = g.matches.filter(m => !m.played);
+                unplayed.forEach(m => {
+                    // Пропускаем матчи с участием игрока (они уже сыграны)
+                    if (m.home === myTeamId || m.away === myTeamId) return;
+                    applyMatchResult(m, g.table);
+                });
+            }
+        });
+        saveState();
+    }
+
     function updateMenu() {
         const myTeam = getMyTeam();
         document.getElementById('menu-my-team').textContent = myTeam ? `${myTeam.flag} ${myTeam.name} (${myTeam.rating.toFixed(3)})` : 'Команда не выбрана';
@@ -1313,7 +1391,6 @@
         saveState();
     }
 
-    // ==================== ВЫБОР КОМАНДЫ ====================
     function renderTeamList() {
         const container = document.getElementById('team-list');
         container.innerHTML = '';
@@ -1369,7 +1446,6 @@
         updateMenu();
     }
 
-    // ==================== СТАРТ ТУРНИРА ====================
     function startTournament() {
         const myTeam = getMyTeam();
         if (!myTeam) return;
@@ -1383,7 +1459,6 @@
         renderTournament();
     }
 
-    // ==================== ГРУППОВОЙ ЭТАП ====================
     function initGroupStage() {
         const allIds = teams.map(t => t.id);
         const participants = [...allIds];
@@ -1426,6 +1501,23 @@
         state.allMatchesGenerated = false;
         state.isEliminated = false;
         saveState();
+        
+        // Сразу симулируем все матчи, кроме матчей игрока
+        simulateAllNonPlayerMatches();
+    }
+
+    function simulateAllNonPlayerMatches() {
+        const groups = state.group.groups;
+        const myTeamId = state.myTeamId;
+        
+        groups.forEach(g => {
+            g.matches.forEach(m => {
+                if (m.home !== myTeamId && m.away !== myTeamId) {
+                    applyMatchResult(m, g.table);
+                }
+            });
+        });
+        saveState();
     }
 
     function renderGroupStage() {
@@ -1463,15 +1555,24 @@
         const isFinished = played >= totalMatches;
         const isMyGroup = state.viewedGroup === state.group.currentGroupIdx;
         
-        if (isFinished && isMyGroup && !state.groupStageFinished) {
-            state.groupStageFinished = true;
-            const top4 = sorted.slice(0, 4).map(r => r.id);
-            state.group.top4 = top4;
-            if (!top4.includes(myTeam.id)) {
-                state.isEliminated = true;
+        // Проверяем, все ли матчи в группе игрока сыграны
+        if (isMyGroup) {
+            const playerMatches = group.matches.filter(m => m.home === myTeam.id || m.away === myTeam.id);
+            const allPlayerMatchesPlayed = playerMatches.every(m => m.played);
+            
+            if (allPlayerMatchesPlayed && !state.groupStageFinished) {
+                // Все матчи игрока сыграны, проверяем выход
+                state.groupStageFinished = true;
+                const top4 = sorted.slice(0, 4).map(r => r.id);
+                state.group.top4 = top4;
+                if (!top4.includes(myTeam.id)) {
+                    state.isEliminated = true;
+                }
+                // Симулируем оставшиеся матчи в других группах
+                simulateRemainingGroupMatches();
+                saveState();
+                setTimeout(() => updateMenu(), 100);
             }
-            saveState();
-            setTimeout(() => updateMenu(), 100);
         }
         
         if (state.isEliminated && isFinished && isMyGroup) {
@@ -1507,11 +1608,28 @@
         }
         
         if (isMyGroup && myRow) {
-            html += `
-                <div class="info-box ${inTop4 ? 'gold' : 'danger'}">
-                    ${inTop4 ? '✅ Вы в топ-4! Продолжайте борьбу.' : '⚠️ Вам нужно подняться в топ-4!'}
-                </div>
-            `;
+            const playerMatches = group.matches.filter(m => m.home === myTeam.id || m.away === myTeam.id);
+            const allPlayerMatchesPlayed = playerMatches.every(m => m.played);
+            
+            if (!allPlayerMatchesPlayed) {
+                html += `
+                    <div class="info-box gold">
+                        ⏳ Вам нужно сыграть ${playerMatches.filter(m => !m.played).length} матчей. Нажмите "Играть" под матчем!
+                    </div>
+                `;
+            } else if (inTop4) {
+                html += `
+                    <div class="info-box gold">
+                        ✅ Вы в топ-4! Нажмите "Выйти в плей-офф" когда все матчи в группе будут сыграны.
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="info-box danger">
+                        ⚠️ Вам нужно подняться в топ-4! (сейчас #${myPos})
+                    </div>
+                `;
+            }
         }
         
         html += `
@@ -1536,36 +1654,94 @@
             </div>
         `;
 
-        // Список матчей с кнопками "Играть"
-        if (isMyGroup && !isFinished) {
-            html += `<div style="margin-top:16px;"><h3 style="color:#f5d742;">📋 Матчи</h3></div>`;
+        // Список матчей
+        if (isMyGroup) {
+            html += `<div style="margin-top:16px;"><h3 style="color:#f5d742;">📋 Мои матчи</h3></div>`;
             html += `<div class="match-grid">`;
-            group.matches.forEach((m, idx) => {
-                const isMyMatch = m.home === myTeam.id || m.away === myTeam.id;
-                if (!m.played) {
-                    html += `
-                        <div class="match-card" style="${isMyMatch ? 'border-color:#d4a017;' : ''}">
-                            <div class="teams">
-                                <div class="t">${getTeamFlag(m.home)} ${getTeamName(m.home)} ${m.home === myTeam.id ? '⭐' : ''}</div>
-                                <div class="t">${getTeamFlag(m.away)} ${getTeamName(m.away)} ${m.away === myTeam.id ? '⭐' : ''}</div>
+            
+            const playerMatches = group.matches.filter(m => m.home === myTeam.id || m.away === myTeam.id);
+            
+            if (playerMatches.length === 0) {
+                html += `<p style="color:#b8956a;">Нет матчей для отображения</p>`;
+            } else {
+                playerMatches.forEach((m, idx) => {
+                    const matchIdx = group.matches.indexOf(m);
+                    if (!m.played) {
+                        html += `
+                            <div class="match-card" style="border-color:#d4a017;">
+                                <div class="teams">
+                                    <div class="t">${getTeamFlag(m.home)} ${getTeamName(m.home)} ${m.home === myTeam.id ? '⭐ (вы)' : ''}</div>
+                                    <div class="t">${getTeamFlag(m.away)} ${getTeamName(m.away)} ${m.away === myTeam.id ? '⭐ (вы)' : ''}</div>
+                                </div>
+                                <button class="btn btn-gold" onclick="showWheelMatch(${m.home}, ${m.away}, ${matchIdx}, ${state.viewedGroup})" style="padding:6px 16px; font-size:12px;">
+                                    🎡 Играть
+                                </button>
                             </div>
-                            <button class="btn btn-gold" onclick="showWheelMatch(${m.home}, ${m.away}, ${idx}, ${state.viewedGroup})" style="padding:6px 16px; font-size:12px;">
-                                🎡 Играть
-                            </button>
-                        </div>
-                    `;
-                } else {
-                    const isDraw = m.isDraw || false;
-                    let scoreClass = 'draw';
-                    if (m.homeScore > m.awayScore) {
-                        const isHome = m.home === myTeam.id;
-                        scoreClass = isHome ? 'win' : 'lose';
-                    } else if (m.awayScore > m.homeScore) {
-                        const isAway = m.away === myTeam.id;
-                        scoreClass = isAway ? 'win' : 'lose';
+                        `;
+                    } else {
+                        const isDraw = m.isDraw || false;
+                        let scoreClass = 'draw';
+                        if (m.homeScore > m.awayScore) {
+                            const isHome = m.home === myTeam.id;
+                            scoreClass = isHome ? 'win' : 'lose';
+                        } else if (m.awayScore > m.homeScore) {
+                            const isAway = m.away === myTeam.id;
+                            scoreClass = isAway ? 'win' : 'lose';
+                        }
+                        html += `
+                            <div class="match-card" style="border-color:#4a8ab8;">
+                                <div class="teams">
+                                    <div class="t">${getTeamFlag(m.home)} ${getTeamName(m.home)} ${m.home === myTeam.id ? '⭐' : ''}</div>
+                                    <div class="t">${getTeamFlag(m.away)} ${getTeamName(m.away)} ${m.away === myTeam.id ? '⭐' : ''}</div>
+                                </div>
+                                <div class="score ${scoreClass}">${m.homeScore} : ${m.awayScore}</div>
+                            </div>
+                        `;
                     }
+                });
+            }
+            
+            // Показываем симулированные матчи других команд
+            const otherMatches = group.matches.filter(m => m.home !== myTeam.id && m.away !== myTeam.id);
+            if (otherMatches.length > 0) {
+                html += `<div style="margin-top:16px; grid-column:1/-1;"><h4 style="color:#4a8ab8;">📊 Другие матчи (симулированы)</h4></div>`;
+                otherMatches.forEach(m => {
+                    if (m.played) {
+                        const isDraw = m.isDraw || false;
+                        let scoreClass = m.homeScore > m.awayScore ? 'win' : (m.awayScore > m.homeScore ? 'lose' : 'draw');
+                        html += `
+                            <div class="match-card" style="opacity:0.7;">
+                                <div class="teams">
+                                    <div class="t">${getTeamFlag(m.home)} ${getTeamName(m.home)}</div>
+                                    <div class="t">${getTeamFlag(m.away)} ${getTeamName(m.away)}</div>
+                                </div>
+                                <div class="score ${scoreClass}">${m.homeScore} : ${m.awayScore}</div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="match-card" style="opacity:0.5;">
+                                <div class="teams">
+                                    <div class="t">${getTeamFlag(m.home)} ${getTeamName(m.home)}</div>
+                                    <div class="t">${getTeamFlag(m.away)} ${getTeamName(m.away)}</div>
+                                </div>
+                                <span class="sim-badge">⏳ симуляция...</span>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            html += `</div>`;
+        } else {
+            // Просмотр другой группы — показываем все матчи
+            html += `<div style="margin-top:16px;"><h3 style="color:#4a8ab8;">📋 Все матчи группы ${group.name}</h3></div>`;
+            html += `<div class="match-grid">`;
+            group.matches.forEach(m => {
+                if (m.played) {
+                    const isDraw = m.isDraw || false;
+                    let scoreClass = m.homeScore > m.awayScore ? 'win' : (m.awayScore > m.homeScore ? 'lose' : 'draw');
                     html += `
-                        <div class="match-card" style="${isMyMatch ? 'border-color:#d4a017;' : ''}">
+                        <div class="match-card" style="opacity:0.7;">
                             <div class="teams">
                                 <div class="t">${getTeamFlag(m.home)} ${getTeamName(m.home)}</div>
                                 <div class="t">${getTeamFlag(m.away)} ${getTeamName(m.away)}</div>
@@ -1583,13 +1759,17 @@
         `;
         
         if (isMyGroup) {
-            if (isFinished && inTop4) {
+            const playerMatches = group.matches.filter(m => m.home === myTeam.id || m.away === myTeam.id);
+            const allPlayerMatchesPlayed = playerMatches.every(m => m.played);
+            const allMatchesPlayed = group.matches.every(m => m.played);
+            
+            if (allPlayerMatchesPlayed && allMatchesPlayed && inTop4) {
                 html += `<button class="btn btn-gold" onclick="advanceFromGroup()">➡️ Выйти в плей-офф</button>`;
             }
-            if (isFinished && !inTop4 && myRow) {
+            if (allMatchesPlayed && !inTop4 && myRow) {
                 html += `<button class="btn btn-red" onclick="showEliminatedModal()">❌ Вы вылетели</button>`;
             }
-            if (isFinished && inTop4) {
+            if (allMatchesPlayed && inTop4) {
                 html += `<span style="color:#f5d742; font-weight:700;">✅ Выход в плей-офф!</span>`;
             }
         } else {
@@ -1734,6 +1914,7 @@
         
         const rounds = state.knockout.rounds;
         let currentRoundIdx = 0;
+        const myTeamId = state.myTeamId;
         
         function processNextRound() {
             if (currentRoundIdx >= rounds.length) {
@@ -1772,13 +1953,27 @@
             
             round.matches.forEach(m => {
                 if (!m.played) {
-                    const result = simulateMatchAuto(m.home, m.away);
+                    // Если это матч с участием игрока, пропускаем (он должен сыграть сам)
+                    if (m.home === myTeamId || m.away === myTeamId) {
+                        return;
+                    }
+                    const result = simulateMatch(m.home, m.away);
                     m.homeScore = result.home;
                     m.awayScore = result.away;
                     m.isDraw = result.isDraw || false;
                     m.played = true;
                 }
             });
+            
+            // Проверяем, есть ли матч игрока в этом раунде
+            const playerMatch = round.matches.find(m => m.home === myTeamId || m.away === myTeamId);
+            if (playerMatch && !playerMatch.played) {
+                // Если есть матч игрока, показываем колесо
+                state.generatingKnockout = false;
+                renderTournament();
+                showPlayerKnockoutMatch(playerMatch, round, currentRoundIdx);
+                return;
+            }
             
             const myTeam = getMyTeam();
             if (myTeam) {
@@ -1840,34 +2035,231 @@
         setTimeout(processNextRound, 100);
     }
 
-    function simulateMatchAuto(homeId, awayId) {
-        const homeRating = getRating(homeId);
-        const awayRating = getRating(awayId);
-        const diff = homeRating - awayRating;
-        let homeWinProb = 1 / (1 + Math.exp(-diff * 1.5));
-        homeWinProb = Math.min(Math.max(homeWinProb, 0.05), 0.95);
-        
-        if (Math.random() < 0.15) {
-            const drawScores = [0, 1, 2, 3];
-            const score = drawScores[Math.floor(Math.random() * drawScores.length)];
-            return { home: score, away: score, isDraw: true };
-        }
-        
-        const rand = Math.random();
-        let homeGoals, awayGoals;
-        if (rand < homeWinProb) {
-            homeGoals = Math.floor(Math.random() * 3) + 1;
-            awayGoals = Math.floor(Math.random() * 2);
-            if (Math.random() < 0.15 && homeWinProb > 0.6) homeGoals += 1;
-        } else {
-            awayGoals = Math.floor(Math.random() * 3) + 1;
-            homeGoals = Math.floor(Math.random() * 2);
-            if (Math.random() < 0.15 && (1 - homeWinProb) > 0.6) awayGoals += 1;
-        }
-        if (homeGoals === awayGoals) homeGoals += 1;
-        homeGoals = Math.min(homeGoals, 8);
-        awayGoals = Math.min(awayGoals, 8);
-        return { home: homeGoals, away: awayGoals, isDraw: false };
+    function showPlayerKnockoutMatch(match, round, roundIdx) {
+        const homeTeam = getTeam(match.home);
+        const awayTeam = getTeam(match.away);
+        if (!homeTeam || !awayTeam) return;
+
+        const sectors = [
+            { label: 'ПОБЕДА', color: '#d4a017', value: 'win' },
+            { label: 'НИЧЬЯ', color: '#2a6a9a', value: 'draw' },
+            { label: 'ПОРАЖЕНИЕ', color: '#8a2a2a', value: 'lose' }
+        ];
+
+        let currentAngle = 0;
+        let spinning = false;
+        let result = null;
+        const roundLabels = ['1/32', '1/16', '1/8', '1/4', '1/2', 'Финал'];
+
+        const modalHtml = `
+            <h2 style="color:#f5d742;">🏆 ${roundLabels[roundIdx] || 'Плей-офф'}</h2>
+            <div style="display:flex; justify-content:center; gap:20px; margin:8px 0 16px; font-size:16px; font-weight:600;">
+                <span>${homeTeam.flag} ${homeTeam.name}</span>
+                <span style="color:#b8860b;">⚔️</span>
+                <span>${awayTeam.flag} ${awayTeam.name}</span>
+            </div>
+            <div class="wheel-wrapper">
+                <canvas id="wheelCanvas" width="400" height="400"></canvas>
+            </div>
+            <button class="spin-btn" id="spinBtn">🎡 КРУТИТЬ!</button>
+            <div id="wheelResult" style="margin-top:12px; font-size:20px; font-weight:700; min-height:40px;"></div>
+            <div style="margin-top:12px;">
+                <button class="btn btn-gold" id="confirmResultBtn" style="display:none;" onclick="confirmKnockoutMatchResult()">
+                    ✅ Подтвердить результат
+                </button>
+            </div>
+        `;
+
+        showModal(modalHtml);
+
+        let confirmed = false;
+        window.confirmKnockoutMatchResult = function() {
+            if (confirmed) return;
+            confirmed = true;
+            
+            const resultVal = state.matchResults[`${match.home}_${match.away}`];
+            if (!resultVal) return;
+
+            let homeScore, awayScore;
+            if (resultVal === 'win') {
+                homeScore = Math.floor(Math.random() * 3) + 2;
+                awayScore = Math.floor(Math.random() * 2);
+            } else if (resultVal === 'draw') {
+                homeScore = Math.floor(Math.random() * 3) + 1;
+                awayScore = homeScore;
+            } else {
+                awayScore = Math.floor(Math.random() * 3) + 2;
+                homeScore = Math.floor(Math.random() * 2);
+            }
+
+            match.homeScore = homeScore;
+            match.awayScore = awayScore;
+            match.played = true;
+            match.isDraw = (homeScore === awayScore);
+
+            const myTeam = getMyTeam();
+            if (myTeam) {
+                const myScore = match.home === myTeam.id ? homeScore : awayScore;
+                const oppScore = match.home === myTeam.id ? awayScore : homeScore;
+                if (myScore < oppScore) {
+                    state.isEliminated = true;
+                } else if (myScore > oppScore) {
+                    state.isEliminated = false;
+                } else {
+                    const myRating = getRating(myTeam.id);
+                    const oppRating = getRating(match.home === myTeam.id ? match.away : match.home);
+                    if (myRating < oppRating) {
+                        state.isEliminated = true;
+                    } else {
+                        state.isEliminated = false;
+                    }
+                }
+            }
+
+            saveState();
+            closeModal();
+            state.generatingKnockout = true;
+            // Продолжаем плей-офф
+            setTimeout(() => {
+                const rounds = state.knockout.rounds;
+                let currentRoundIdx = rounds.findIndex(r => r === round);
+                if (currentRoundIdx === -1) currentRoundIdx = 0;
+                
+                // Передаем управление обратно в автоплей
+                state.generatingKnockout = false;
+                autoPlayAllKnockoutRounds();
+            }, 100);
+        };
+
+        setTimeout(() => {
+            const canvas = document.getElementById('wheelCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const spinBtn = document.getElementById('spinBtn');
+
+            function drawWheel(angle) {
+                const cx = 200, cy = 200, r = 180;
+                ctx.clearRect(0, 0, 400, 400);
+                
+                const sectorAngle = (2 * Math.PI) / sectors.length;
+                
+                sectors.forEach((s, i) => {
+                    const start = angle + i * sectorAngle;
+                    const end = start + sectorAngle;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.arc(cx, cy, r, start, end);
+                    ctx.closePath();
+                    
+                    const grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, r);
+                    grad.addColorStop(0, '#2a1f14');
+                    grad.addColorStop(0.5, s.color);
+                    grad.addColorStop(1, s.color);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                    ctx.strokeStyle = '#b8860b';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(start + sectorAngle / 2);
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 16px Inter, sans-serif';
+                    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                    ctx.shadowBlur = 8;
+                    ctx.fillText(s.label, r * 0.6, 0);
+                    ctx.restore();
+                });
+                
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle);
+                ctx.beginPath();
+                ctx.moveTo(r + 10, 0);
+                ctx.lineTo(r - 15, -12);
+                ctx.lineTo(r - 15, 12);
+                ctx.closePath();
+                ctx.fillStyle = '#f5d742';
+                ctx.shadowColor = 'rgba(245,215,66,0.6)';
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.restore();
+                
+                ctx.beginPath();
+                ctx.arc(cx, cy, 16, 0, 2 * Math.PI);
+                ctx.fillStyle = '#b8860b';
+                ctx.shadowColor = 'rgba(184,134,11,0.5)';
+                ctx.shadowBlur = 20;
+                ctx.fill();
+                ctx.fillStyle = '#f5d742';
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowBlur = 0;
+                ctx.fillText('⚽', cx, cy);
+            }
+
+            let animationId = null;
+            let velocity = 0;
+
+            function spinWheel() {
+                if (spinning) return;
+                spinning = true;
+                spinBtn.disabled = true;
+                spinBtn.textContent = '🌀 КРУТИТСЯ...';
+                document.getElementById('wheelResult').textContent = '';
+
+                velocity = 0.5 + Math.random() * 0.4;
+                const deceleration = 0.985;
+                const minVelocity = 0.001;
+
+                function animate() {
+                    if (velocity < minVelocity) {
+                        spinning = false;
+                        spinBtn.disabled = false;
+                        spinBtn.textContent = '🎡 КРУТИТЬ!';
+                        
+                        const sectorAngle = (2 * Math.PI) / sectors.length;
+                        let normalized = currentAngle % (2 * Math.PI);
+                        if (normalized < 0) normalized += 2 * Math.PI;
+                        
+                        const pointerAngle = 0;
+                        let relativeAngle = (2 * Math.PI - normalized + pointerAngle) % (2 * Math.PI);
+                        const sectorIndex = Math.floor(relativeAngle / sectorAngle) % sectors.length;
+                        
+                        result = sectors[sectorIndex];
+                        const resultText = result.label === 'ПОБЕДА' ? '🏆 ПОБЕДА!' :
+                                         result.label === 'НИЧЬЯ' ? '🤝 НИЧЬЯ!' : '😞 ПОРАЖЕНИЕ!';
+                        const resultColor = result.label === 'ПОБЕДА' ? '#f5d742' :
+                                           result.label === 'НИЧЬЯ' ? '#4a8ab8' : '#b84a4a';
+                        
+                        document.getElementById('wheelResult').innerHTML = `
+                            <span style="color:${resultColor}; font-size:28px;">${resultText}</span>
+                        `;
+                        document.getElementById('confirmResultBtn').style.display = 'inline-block';
+                        
+                        state.matchResults[`${match.home}_${match.away}`] = result.value;
+                        saveState();
+                        return;
+                    }
+
+                    currentAngle += velocity;
+                    velocity *= deceleration;
+                    drawWheel(currentAngle);
+                    animationId = requestAnimationFrame(animate);
+                }
+
+                animate();
+            }
+
+            drawWheel(0);
+            spinBtn.addEventListener('click', spinWheel);
+
+        }, 100);
     }
 
     // ==================== ТУРНИР ====================
@@ -1889,7 +2281,6 @@
         updateMenu();
     }
 
-    // ==================== ПЛЕЙ-ОФФ ОТОБРАЖЕНИЕ ====================
     function renderKnockout() {
         const container = document.getElementById('tournament-content');
         const myTeam = getMyTeam();
@@ -1945,8 +2336,9 @@
                         const total = r.matches.length;
                         const isDone = played === total && total > 0;
                         const roundLabels = ['1/32', '1/16', '1/8', '1/4', '1/2', 'Финал'];
+                        const hasPlayerMatch = r.matches.some(m => m.home === myTeam.id || m.away === myTeam.id);
                         return `<span style="padding:4px 14px; border-radius:30px; font-size:12px; background:${isDone ? 'rgba(218,165,32,0.12)' : 'rgba(255,215,0,0.04)'}; border:1px solid ${isDone ? '#b8860b' : 'rgba(184,134,11,0.15)'}; color:${isDone ? '#f5d742' : '#b8956a'};">
-                            ${roundLabels[idx] || ''} ${isDone ? '✅' : '⏳'} (${played}/${total})
+                            ${roundLabels[idx] || ''} ${isDone ? '✅' : '⏳'} ${hasPlayerMatch ? '⭐' : ''} (${played}/${total})
                         </span>`;
                     }).join('')}
                 </div>
@@ -1965,6 +2357,7 @@
                 const isMy = m.home === myTeam.id || m.away === myTeam.id;
                 const homeScore = m.played ? m.homeScore : '?';
                 const awayScore = m.played ? m.awayScore : '?';
+                const isPlayerMatch = m.home === myTeam.id || m.away === myTeam.id;
                 
                 let scoreClass = 'draw';
                 if (m.played) {
@@ -1979,7 +2372,11 @@
                             <div class="t">${getTeamFlag(m.home)} ${getTeamName(m.home)} ${m.home === myTeam.id ? '⭐' : ''}</div>
                             <div class="t">${getTeamFlag(m.away)} ${getTeamName(m.away)} ${m.away === myTeam.id ? '⭐' : ''}</div>
                         </div>
-                        <div class="score ${scoreClass}">${homeScore} : ${awayScore}</div>
+                        <div>
+                            <div class="score ${scoreClass}">${homeScore} : ${awayScore}</div>
+                            ${isPlayerMatch && !m.played ? '<span class="player-badge">⏳ Ваш матч</span>' : ''}
+                            ${!isPlayerMatch && m.played ? '<span class="sim-badge">🤖 симуляция</span>' : ''}
+                        </div>
                     </div>
                 `;
             });
@@ -2161,7 +2558,7 @@
 
     console.log('⚽ ЕНЛ 256 — Золотой турнир загружен!');
     console.log(`📊 ${teams.length} команд, ${russianTeamIds.length} российских команд`);
-    console.log('🏆 Удачи в турнире!');
+    console.log('🎮 Играются только матчи вашей команды!');
 </script>
 </body>
-  </html>
+                </html>
