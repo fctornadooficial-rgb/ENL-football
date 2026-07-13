@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЕНЛ 256 - Единая Национальная Лига</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0e1a;
+            color: #fff;
+            font-family: 'Inter', 'Roboto', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .game-container {
+            max-width: 1200px;
+            width: 100%;
+            background: linear-gradient(145deg, #0f1a2e, #1a2a3f);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 25px 50px -8px rgba(0,0,0,0.8);
+            border: 1px solid rgba(46, 204, 113, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(46, 204, 113, 0.03) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid rgba(46, 204, 113, 0.15);
+            padding-bottom: 16px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .logo span {
+            font-size: 12px;
+            color: #7f8c8d;
+            -webkit-text-fill-color: #7f8c8d;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #bdc3c7;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(4px);
+            font-family: inherit;
+        }
+        .nav-btn:hover {
+            background: rgba(46, 204, 113, 0.15);
+            border-color: rgba(46, 204, 113, 0.3);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+        .nav-btn.primary {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border-color: transparent;
+            color: #fff;
+        }
+        .nav-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
+        }
+        .nav-btn.danger {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        .nav-btn.danger:hover {
+            background: rgba(231, 76, 60, 0.3);
+        }
+        .nav-btn.gold {
+            background: rgba(241, 196, 15, 0.15);
+            border-color: rgba(241, 196, 15, 0.2);
+            color: #f1c40f;
+        }
+        .nav-btn.gold:hover {
+            background: rgba(241, 196, 15, 0.25);
+        }
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .screen.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        .team-grid::-webkit-scrollbar {
+            width: 5px;
+        }
+        .team-grid::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        .team-grid::-webkit-scrollbar-thumb {
+            background: #2ecc71;
+            border-radius: 10px;
+        }
+        .team-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .team-card:hover {
+            background: rgba(46, 204, 113, 0.08);
+            border-color: rgba(46, 204, 113, 0.2);
+            transform: translateX(4px);
+        }
+        .team-card.selected {
+            background: rgba(46, 204, 113, 0.15);
+            border-color: #2ecc71;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.1);
+        }
+        .team-card .name {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .team-card .flag {
+            font-size: 18px;
+        }
+        .team-card .rating {
+            background: rgba(46, 204, 113, 0.15);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #2ecc71;
+        }
+        .team-card .rating.low {
+            color: #e67e22;
+            background: rgba(230, 126, 34, 0.15);
+        }
+        .team-card .rating.very-low {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.15);
+        }
+        .team-card .rus-badge {
+            background: rgba(46, 204, 113, 0.15);
+            color: #2ecc71;
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+        .group-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+        .group-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #bdc3c7;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .group-btn:hover {
+            background: rgba(46, 204, 113, 0.15);
+            border-color: rgba(46, 204, 113, 0.3);
+            color: #fff;
+        }
+        .group-btn.active {
+            background: rgba(46, 204, 113, 0.2);
+            border-color: #2ecc71;
+            color: #2ecc71;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            margin: 16px 0;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        table th {
+            background: rgba(46, 204, 113, 0.08);
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 700;
+            color: #2ecc71;
+            border-bottom: 2px solid rgba(46, 204, 113, 0.1);
+        }
+        table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        table tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+        table tr.highlight td {
+            background: rgba(46, 204, 113, 0.08);
+            border-left: 3px solid #2ecc71;
+        }
+        table tr.qualified td {
+            background: rgba(46, 204, 113, 0.05);
+            border-left: 3px solid #2ecc71;
+        }
+        .wheel-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px 0;
+        }
+        .wheel-wrapper {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+        .wheel-wrapper canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(46, 204, 113, 0.15), inset 0 0 40px rgba(0,0,0,0.3);
+        }
+        .spin-btn {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            border: none;
+            color: #1a1a2e;
+            font-weight: 800;
+            font-size: 18px;
+            padding: 12px 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            letter-spacing: 1px;
+        }
+        .spin-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(241, 196, 15, 0.4);
+        }
+        .spin-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .event-log {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            max-height: 150px;
+            overflow-y: auto;
+            width: 100%;
+            font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .event-log::-webkit-scrollbar {
+            width: 4px;
+        }
+        .event-log::-webkit-scrollbar-thumb {
+            background: #2ecc71;
+            border-radius: 10px;
+        }
+        .event-log .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            color: #bdc3c7;
+        }
+        .event-log .log-entry.goal {
+            color: #2ecc71;
+            font-weight: 700;
+        }
+        .event-log .log-entry.danger {
+            color: #f39c12;
+        }
+        .event-log .log-entry.draw {
+            color: #3498db;
+            font-weight: 600;
+        }
+        .bracket-container {
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        .bracket {
+            display: flex;
+            gap: 16px;
+            min-width: 800px;
+            padding: 10px;
+        }
+        .bracket-round {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 120px;
+        }
+        .bracket-round .round-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .bracket-match {
+            background: rgba(255,255,255,0.04);
+            border-radius: 8px;
+            padding: 6px 8px;
+            border: 1px solid rgba(255,255,255,0.06);
+            font-size: 10px;
+            line-height: 1.4;
+            position: relative;
+        }
+        .bracket-match .team-name {
+            display: flex;
+            justify-content: space-between;
+            padding: 1px 0;
+        }
+        .bracket-match .team-name.highlight {
+            color: #f1c40f;
+            font-weight: 900;
+            background: rgba(241, 196, 15, 0.1);
+            border-radius: 4px;
+            padding: 0 4px;
+        }
+        .bracket-match .team-name.eliminated {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+        .bracket-match .score-text {
+            color: #7f8c8d;
+        }
+        .bracket-match .score-text.winner {
+            color: #2ecc71;
+            font-weight: 700;
+        }
+        .bracket-match .score-text.draw-score {
+            color: #3498db;
+            font-weight: 700;
+        }
+        .info-box {
+            background: rgba(46, 204, 113, 0.05);
+            border-left: 3px solid #2ecc71;
+            padding: 12px 18px;
+            border-radius: 0 12px 12px 0;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+        .info-box.warning {
+            border-left-color: #f39c12;
+            background: rgba(243, 156, 18, 0.05);
+        }
+        .info-box.danger {
+            border-left-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.05);
+        }
+        .info-box.gold {
+            border-left-color: #f1c40f;
+            background: rgba(241, 196, 15, 0.05);
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 8px 20px;
+            border-radius: 24px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .btn-green {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: #fff;
+        }
+        .btn-green:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
+        }
+        .btn-blue {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+        }
+        .btn-blue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: #1a1a2e;
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(241, 196, 15, 0.3);
+        }
+        .btn-gray {
+            background: rgba(255,255,255,0.08);
+            color: #bdc3c7;
+        }
+        .btn-gray:hover {
+            background: rgba(255,255,255,0.14);
+        }
+        .btn-red {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        .btn-red:hover {
+            background: rgba(231, 76, 60, 0.3);
+        }
+        .my-team-badge {
+            display: inline-block;
+            background: rgba(241, 196, 15, 0.15);
+            color: #f1c40f;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+        .qualification-status {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+        }
+        .qualification-status .stat {
+            display: flex;
+            flex-direction: column;
+        }
+        .qualification-status .stat .label {
+            font-size: 11px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .qualification-status .stat .value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+        }
+        .qualification-status .stat .value.green {
+            color: #2ecc71;
+        }
+        .qualification-status .stat .value.red {
+            color: #e74c3c;
+        }
+        .qualification-status .stat .value.gold {
+            color: #f1c40f;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 20px;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal {
+            background: linear-gradient(145deg, #1a2a3f, #0f1a2e);
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid rgba(46, 204, 113, 0.15);
+            animation: fadeIn 0.3s ease;
+            text-align: center;
+        }
+        .modal h2 {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+        .modal .sub {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        .modal .big-icon {
+            font-size: 64px;
+            margin: 12px 0;
+        }
+        .modal .btn {
+            margin: 4px;
+        }
+        .group-label {
+            font-size: 20px;
+            font-weight: 800;
+            color: #2ecc71;
+            margin: 8px 0;
+        }
+        .match-result {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 16px 0;
+            text-align: center;
+        }
+        .match-result .score-big {
+            font-size: 48px;
+            font-weight: 900;
+            color: #f1c40f;
+        }
+        .match-result .teams {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .rating-up {
+            color: #2ecc71;
+            font-weight: 700;
+            animation: pulse 1s ease;
+        }
+        .flag-icon {
+            font-size: 20px;
+            margin-right: 6px;
+        }
+        .weak-badge {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+        .qualified-badge {
+            background: rgba(46, 204, 113, 0.15);
+            color: #2ecc71;
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .champion-badge {
+            background: rgba(241, 196, 15, 0.2);
+            color: #f1c40f;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .rus-badge {
+            background: rgba(46, 204, 113, 0.15);
+            color: #2ecc71;
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+        .generating {
+            color: #f1c40f;
+            animation: pulse 0.5s ease infinite;
+        }
+        .eliminated-text {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+        .spectator-mode {
+            background: rgba(241, 196, 15, 0.05);
+            border: 1px solid rgba(241, 196, 15, 0.15);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 12px 0;
+            text-align: center;
+        }
+        .spectator-mode span {
+            color: #f1c40f;
+            font-weight: 700;
+        }
+        .champion-card {
+            background: linear-gradient(135deg, rgba(241, 196, 15, 0.1), rgba(241, 196, 15, 0.02));
+            border: 2px solid rgba(241, 196, 15, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin: 16px 0;
+        }
+        .champion-card .trophy {
+            font-size: 48px;
+        }
+        .champion-card .name {
+            font-size: 28px;
+            font-weight: 900;
+            color: #f1c40f;
+            margin: 8px 0;
+        }
+        .champion-card .sub {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .auto-generate-progress {
+            background: rgba(46, 204, 113, 0.05);
+            border: 1px solid rgba(46, 204, 113, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+            text-align: center;
+        }
+        .auto-generate-progress .spinner {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+            font-size: 24px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .match-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .match-card {
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px;
+            padding: 10px 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        .match-card .teams {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .match-card .teams .t {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .match-card .score {
+            font-weight: 700;
+            font-size: 14px;
+            min-width: 40px;
+            text-align: center;
+        }
+        .match-card .score.win {
+            color: #2ecc71;
+        }
+        .match-card .score.lose {
+            color: #e74c3c;
+        }
+        .match-card .score.draw {
+            color: #3498db;
+        }
+        .draw-badge {
+            background: rgba(52, 152, 219, 0.15);
+            color: #3498db;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 700;
+        }
+        @media (max-width: 768px) {
+            .game-container { padding: 16px; }
+            .header { flex-direction: column; align-items: flex-start; }
+            .match-grid { grid-template-columns: 1fr; }
+            .team-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+            .bracket { min-width: 600px; }
+            .wheel-wrapper { width: 220px; height: 220px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container" id="app">
+        <div class="header">
+            <div class="logo">
+                <h1>⚽ ЕНЛ 256</h1>
+                <span>Единая Национальная Лига</span>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="showScreen('menu')">🏠 Главная</button>
+                <button class="nav-btn" onclick="showScreen('teams')">📋 Команды</button>
+                <button class="nav-btn" onclick="showScreen('tournament')">🏆 Турнир</button>
+                <button class="nav-btn gold" onclick="showScreen('bracket')">📋 Сетка</button>
+                <button class="nav-btn danger" onclick="resetGame()">🔄 Сбросить</button>
+            </div>
+        </div>
+
+        <!-- ГЛАВНОЕ МЕНЮ -->
+        <div id="screen-menu" class="screen active">
+            <div style="text-align:center; padding: 40px 20px;">
+                <h1 style="font-size:48px; margin-bottom:8px;">⚽</h1>
+                <h2 style="font-size:32px; font-weight:900;">Единая Национальная Лига 256</h2>
+                <p style="color:#7f8c8d; margin:8px 0 24px;">256 команд · 1 этап · 1 чемпион</p>
+                <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+                    <button class="btn btn-green" onclick="showScreen('teams')">Выбрать команду</button>
+                    <button class="btn btn-blue" onclick="showScreen('tournament')">Турнир</button>
+                    <button class="btn btn-gold" onclick="showScreen('bracket')">Сетка плей-офф</button>
+                </div>
+                <div style="margin-top:30px; padding:16px; background:rgba(255,255,255,0.03); border-radius:12px; max-width:400px; margin-left:auto; margin-right:auto;">
+                    <div style="font-size:14px; color:#7f8c8d;">
+                        <div>🏆 <span id="menu-champion" style="color:#f1c40f;">—</span></div>
+                        <div>👤 <span id="menu-my-team" style="color:#2ecc71;">Команда не выбрана</span></div>
+                        <div>📊 <span id="menu-stage" style="color:#bdc3c7;">Ожидание</span></div>
+                        <div>📈 <span id="menu-rating" style="color:#f39c12;">—</span></div>
+                        <div id="menu-status" style="color:#7f8c8d;"></div>
+                    </div>
+                </div>
+                <div id="champion-display" style="margin-top:16px; display:none;"></div>
+            </div>
+        </div>
+
+        <!-- ВЫБОР КОМАНДЫ -->
+        <div id="screen-teams" class="screen">
+            <h2 style="margin-bottom:12px;">📋 Выберите команду</h2>
+            <p style="color:#7f8c8d; font-size:14px; margin-bottom:16px;">Всего 256 команд. Рейтинг 0.010–5.000. <span style="color:#2ecc71;">🟢 Российские команды отмечены</span></p>
+            <div id="team-list" class="team-grid"></div>
+            <div id="selected-team-info" style="margin-top:16px;"></div>
+        </div>
+
+        <!-- ТУРНИР -->
+        <div id="screen-tournament" class="screen">
+            <div id="tournament-content">
+                <p style="color:#7f8c8d; text-align:center; padding:40px 0;">Выберите команду, чтобы начать турнир</p>
+            </div>
+        </div>
+
+        <!-- СЕТКА ПЛЕЙ-ОФФ -->
+        <div id="screen-bracket" class="screen">
+            <h2 style="margin-bottom:12px;">🏆 Сетка плей-офф</h2>
+            <div id="bracket-content" class="bracket-container">
+                <p style="color:#7f8c8d; text-align:center; padding:40px 0;">Доступно после выхода в плей-офф</p>
+            </div>
+        </div>
+
+        <!-- МАТЧ -->
+        <div id="screen-match" class="screen">
+            <div id="match-content"></div>
+        </div>
+
+        <!-- МОДАЛЬНОЕ ОКНО -->
+        <div class="modal-overlay" id="modal">
+            <div class="modal" id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== ФЛАГИ СТРАН ====================
+        const FLAGS = {
+            'Россия': '🇷🇺', 'Испания': '🇪🇸', 'Германия': '🇩🇪', 'Англия': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+            'Франция': '🇫🇷', 'Италия': '🇮🇹', 'Бразилия': '🇧🇷', 'Аргентина': '🇦🇷',
+            'Нидерланды': '🇳🇱', 'Португалия': '🇵🇹', 'Шотландия': '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+            'Турция': '🇹🇷', 'Украина': '🇺🇦', 'Греция': '🇬🇷', 'Сербия': '🇷🇸',
+            'Хорватия': '🇭🇷', 'Чехия': '🇨🇿', 'Польша': '🇵🇱', 'Венгрия': '🇭🇺',
+            'Болгария': '🇧🇬', 'Румыния': '🇷🇴', 'Бельгия': '🇧🇪', 'Дания': '🇩🇰',
+            'Норвегия': '🇳🇴', 'Швеция': '🇸🇪', 'Финляндия': '🇫🇮', 'Исландия': '🇮🇸',
+            'Ирландия': '🇮🇪', 'Северная Ирландия': '🇬🇧', 'Уэльс': '🏴󠁧󠁢󠁷󠁬󠁳󠁿',
+            'Эстония': '🇪🇪', 'Латвия': '🇱🇻', 'Литва': '🇱🇹', 'Молдова': '🇲🇩',
+            'Армения': '🇦🇲', 'Азербайджан': '🇦🇿', 'Казахстан': '🇰🇿', 'Узбекистан': '🇺🇿',
+            'Саудовская Аравия': '🇸🇦', 'Южная Корея': '🇰🇷', 'Япония': '🇯🇵',
+            'Египет': '🇪🇬', 'Тунис': '🇹🇳', 'ЮАР': '🇿🇦', 'Марокко': '🇲🇦',
+            'Алжир': '🇩🇿', 'Гана': '🇬🇭', 'Камерун': '🇨🇲', 'ДР Конго': '🇨🇩',
+            'Судан': '🇸🇩', 'Нигерия': '🇳🇬', 'Кот-д\'Ивуар': '🇨🇮', 'Сейшелы': '🇸🇨',
+            'Маврикий': '🇲🇺', 'Буркина-Фасо': '🇧🇫', 'Бенин': '🇧🇯', 'Того': '🇹🇬',
+            'ЦАР': '🇨🇫', 'Гвинея': '🇬🇳', 'Мали': '🇲🇱', 'Чад': '🇹🇩', 'Мавритания': '🇲🇷',
+            'Сенегал': '🇸🇳', 'Гамбия': '🇬🇲', 'Габон': '🇬🇦', 'Ливия': '🇱🇾',
+            'Сомали': '🇸🇴', 'Эфиопия': '🇪🇹', 'Уганда': '🇺🇬', 'Танзания': '🇹🇿',
+            'Замбия': '🇿🇲', 'Зимбабве': '🇿🇼', 'Ботсвана': '🇧🇼', 'Намибия': '🇳🇦',
+            'Эсватини': '🇸🇿', 'Лесото': '🇱🇸', 'Малави': '🇲🇼', 'Мозамбик': '🇲🇿',
+            'Руанда': '🇷🇼', 'Ангола': '🇦🇴', 'Гвинея-Бисау': '🇬🇼', 'Кабо-Верде': '🇨🇻',
+            'Сан-Томе и Принсипи': '🇸🇹', 'Южный Судан': '🇸🇸', 'Кения': '🇰🇪',
+            'Мальдивы': '🇲🇻', 'Бангладеш': '🇧🇩', 'Индия': '🇮🇳', 'Непал': '🇳🇵',
+            'Бутан': '🇧🇹', 'Шри-Ланка': '🇱🇰', 'Пакистан': '🇵🇰', 'Афганистан': '🇦🇫',
+            'Таджикистан': '🇹🇯', 'Туркменистан': '🇹🇲', 'Кыргызстан': '🇰🇬',
+            'Монголия': '🇲🇳', 'Макао': '🇲🇴', 'Гонконг': '🇭🇰', 'Тайвань': '🇹🇼',
+            'Камбоджа': '🇰🇭', 'Лаос': '🇱🇦', 'Мьянма': '🇲🇲', 'Таиланд': '🇹🇭',
+            'Малайзия': '🇲🇾', 'Сингапур': '🇸🇬', 'Индонезия': '🇮🇩', 'Восточный Тимор': '🇹🇱',
+            'Папуа — Новая Гвинея': '🇵🇬', 'Соломоновы острова': '🇸🇧', 'Вануату': '🇻🇺',
+            'Тонга': '🇹🇴', 'Самоа': '🇼🇸', 'Американское Самоа': '🇦🇸', 'Острова Кука': '🇨🇰',
+            'Фиджи': '🇫🇯', 'Новая Зеландия': '🇳🇿', 'Австралия': '🇦🇺', 'Вьетнам': '🇻🇳',
+            'Китай': '🇨🇳', 'Иран': '🇮🇷', 'Ирак': '🇮🇶', 'Иордания': '🇯🇴', 'Ливан': '🇱🇧',
+            'Сирия': '🇸🇾', 'Израиль': '🇮🇱', 'Катар': '🇶🇦', 'Бахрейн': '🇧🇭', 'Кувейт': '🇰🇼',
+            'Оман': '🇴🇲', 'ОАЭ': '🇦🇪', 'Йемен': '🇾🇪', 'Словакия': '🇸🇰', 'Словения': '🇸🇮',
+            'Босния и Герцеговина': '🇧🇦', 'Черногория': '🇲🇪', 'Северная Македония': '🇲🇰',
+            'Албания': '🇦🇱', 'Косово': '🇽🇰', 'Австрия': '🇦🇹', 'Швейцария': '🇨🇭',
+            'Люксембург': '🇱🇺', 'Монако': '🇲🇨', 'Гуам': '🇬🇺', 'Новая Каледония': '🇳🇨',
+            'Таити': '🇵🇫', 'Барбадос': '🇧🇧', 'Гренада': '🇬🇩', 'Сент-Винсент и Гренадины': '🇻🇨',
+            'Сент-Люсия': '🇱🇨', 'Тринидад и Тобаго': '🇹🇹', 'Ямайка': '🇯🇲',
+            'Багамы': '🇧🇸', 'Гайана': '🇬🇾', 'Суринам': '🇸🇷', 'Коста-Рика': '🇨🇷',
+            'Гватемала': '🇬🇹', 'Сальвадор': '🇸🇻', 'Гондурас': '🇭🇳', 'Никарагуа': '🇳🇮',
+            'Панама': '🇵🇦', 'Белиз': '🇧🇿', 'Мексика': '🇲🇽', 'США': '🇺🇸',
+            'Канада': '🇨🇦', 'Куба': '🇨🇺', 'Доминиканская Республика': '🇩🇴',
+            'Пуэрто-Рико': '🇵🇷', 'Кюрасао': '🇨🇼', 'Аруба': '🇦🇼', 'Бермуды': '🇧🇲',
+            'Каймановы острова': '🇰🇾', 'Монтсеррат': '🇲🇸', 'Теркс и Кайкос': '🇹🇨',
+            'Ангилья': '🇦🇮', 'Антигуа и Барбуда': '🇦🇬', 'Сент-Китс и Невис': '🇰🇳',
+            'Беларусь': '🇧🇾', 'Грузия': '🇬🇪', 'Сан-Марино': '🇸🇲', 'Андорра': '🇦🇩',
+            'Гибралтар': '🇬🇮', 'Мальта': '🇲🇹', 'Либерия': '🇱🇷', 'Сьерра-Леоне': '🇸🇱',
+            'Коморы': '🇰🇲', 'Мадагаскар': '🇲🇬', 'Джибути': '🇩🇯', 'Реюньон': '🇷🇪'
+        };
+
+        // ==================== ВСЕ 256 КОМАНД ====================
+        const TEAMS_DATA = [
+            { country: 'Россия', name: 'ФК Торнадо', rating: 5.000 },
+            { country: 'Испания', name: 'Реал Мадрид', rating: 4.990 },
+            { country: 'Германия', name: 'Бавария', rating: 4.981 },
+            { country: 'Англия', name: 'Манчестер Сити', rating: 4.971 },
+            { country: 'Франция', name: 'ПСЖ', rating: 4.961 },
+            { country: 'Англия', name: 'Ливерпуль', rating: 4.951 },
+            { country: 'Италия', name: 'Интер', rating: 4.942 },
+            { country: 'Испания', name: 'Барселона', rating: 4.932 },
+            { country: 'Бразилия', name: 'Фламенго', rating: 4.922 },
+            { country: 'Аргентина', name: 'Бока Хуниорс', rating: 4.912 },
+            { country: 'Нидерланды', name: 'Аякс', rating: 4.903 },
+            { country: 'Португалия', name: 'Порту', rating: 4.893 },
+            { country: 'Италия', name: 'Ювентус', rating: 4.883 },
+            { country: 'Англия', name: 'Челси', rating: 4.873 },
+            { country: 'Испания', name: 'Атлетико', rating: 4.864 },
+            { country: 'Португалия', name: 'Бенфика', rating: 4.854 },
+            { country: 'Шотландия', name: 'Селтик', rating: 4.844 },
+            { country: 'Турция', name: 'Галатасарай', rating: 4.834 },
+            { country: 'Украина', name: 'Шахтёр', rating: 4.825 },
+            { country: 'Россия', name: 'Зенит', rating: 4.815 },
+            { country: 'Греция', name: 'Олимпиакос', rating: 4.805 },
+            { country: 'Сербия', name: 'Црвена Звезда', rating: 4.795 },
+            { country: 'Хорватия', name: 'Динамо Загреб', rating: 4.786 },
+            { country: 'Чехия', name: 'Славия Прага', rating: 4.776 },
+            { country: 'Польша', name: 'Легия', rating: 4.766 },
+            { country: 'Венгрия', name: 'Ференцварош', rating: 4.756 },
+            { country: 'Болгария', name: 'Лудогорец', rating: 4.747 },
+            { country: 'Румыния', name: 'Стяуа', rating: 4.737 },
+            { country: 'Шотландия', name: 'Рейнджерс', rating: 4.727 },
+            { country: 'Бельгия', name: 'Андерлехт', rating: 4.717 },
+            { country: 'Дания', name: 'Копенгаген', rating: 4.708 },
+            { country: 'Норвегия', name: 'Русенборг', rating: 4.698 },
+            { country: 'Швеция', name: 'Мальмё', rating: 4.688 },
+            { country: 'Финляндия', name: 'ХИК', rating: 4.678 },
+            { country: 'Исландия', name: 'Брейдаблик', rating: 4.669 },
+            { country: 'Ирландия', name: 'Шемрок Роверс', rating: 4.659 },
+            { country: 'Северная Ирландия', name: 'Линфилд', rating: 4.649 },
+            { country: 'Уэльс', name: 'ТНС', rating: 4.639 },
+            { country: 'Эстония', name: 'Флора', rating: 4.630 },
+            { country: 'Латвия', name: 'РФШ', rating: 4.620 },
+            { country: 'Литва', name: 'Жальгирис', rating: 4.610 },
+            { country: 'Молдова', name: 'Шериф', rating: 4.600 },
+            { country: 'Армения', name: 'Пюник', rating: 4.591 },
+            { country: 'Азербайджан', name: 'Карабах', rating: 4.581 },
+            { country: 'Казахстан', name: 'Астана', rating: 4.571 },
+            { country: 'Узбекистан', name: 'Пахтакор', rating: 4.561 },
+            { country: 'Саудовская Аравия', name: 'Аль-Хиляль', rating: 4.552 },
+            { country: 'Южная Корея', name: 'Ульсан Хёндэ', rating: 4.542 },
+            { country: 'Япония', name: 'Кавасаки Фронтале', rating: 4.532 },
+            { country: 'Египет', name: 'Аль-Ахли', rating: 4.522 },
+            { country: 'Тунис', name: 'Эсперанс', rating: 4.513 },
+            { country: 'ЮАР', name: 'Кайзер Чифс', rating: 4.503 },
+            { country: 'Марокко', name: 'Раджа', rating: 4.493 },
+            { country: 'Алжир', name: 'ЕС Сетиф', rating: 4.483 },
+            { country: 'Гана', name: 'Асанте Котоко', rating: 4.474 },
+            { country: 'Камерун', name: 'Ениме', rating: 4.464 },
+            { country: 'ДР Конго', name: 'ТП Мазембе', rating: 4.454 },
+            { country: 'Судан', name: 'Аль-Меррейх', rating: 4.444 },
+            { country: 'Нигерия', name: 'Кано Пилларс', rating: 4.435 },
+            { country: 'Кот-д\'Ивуар', name: 'Африка Спорт', rating: 4.425 },
+            { country: 'Сейшелы', name: 'Сен-Мишель', rating: 4.415 },
+            { country: 'Маврикий', name: 'Лайт Старз', rating: 4.405 },
+            { country: 'Буркина-Фасо', name: 'Коттон Спорт', rating: 4.396 },
+            { country: 'Кот-д\'Ивуар', name: 'АСЕК Мимозас', rating: 4.386 },
+            { country: 'Бенин', name: 'Драгонс', rating: 4.376 },
+            { country: 'Того', name: 'Семассия', rating: 4.366 },
+            { country: 'ЦАР', name: 'Олимпик Реал', rating: 4.357 },
+            { country: 'Алжир', name: 'ФК Константина', rating: 4.347 },
+            { country: 'Гвинея', name: 'Хоройя', rating: 4.337 },
+            { country: 'Мали', name: 'Стад Мальен', rating: 4.327 },
+            { country: 'Чад', name: 'Ренессанс', rating: 4.318 },
+            { country: 'Мавритания', name: 'ФК Нуакшот', rating: 4.308 },
+            { country: 'Сенегал', name: 'Каса Спорт', rating: 4.298 },
+            { country: 'Гамбия', name: 'Джиби', rating: 4.288 },
+            { country: 'Буркина-Фасо', name: 'Этуаль Филант', rating: 4.279 },
+            { country: 'Габон', name: 'Мангаспорт', rating: 4.269 },
+            { country: 'Тунис', name: 'Сфаксьен', rating: 4.259 },
+            { country: 'Ливия', name: 'Аль-Иттихад', rating: 4.249 },
+            { country: 'Марокко', name: 'Ренессанс Беркан', rating: 4.240 },
+            { country: 'Сомали', name: 'ФК Кайса', rating: 4.230 },
+            { country: 'Эфиопия', name: 'Хоршед', rating: 4.220 },
+            { country: 'Эфиопия', name: 'Сент-Джордж', rating: 4.210 },
+            { country: 'Уганда', name: 'Кампала Сити', rating: 4.201 },
+            { country: 'Танзания', name: 'Янг Африканс', rating: 4.191 },
+            { country: 'Замбия', name: 'ЗЕСКО Юнайтед', rating: 4.181 },
+            { country: 'Зимбабве', name: 'Дайнамоз', rating: 4.171 },
+            { country: 'Ботсвана', name: 'Мочуд Центр', rating: 4.162 },
+            { country: 'Намибия', name: 'Блэк Африка', rating: 4.152 },
+            { country: 'Эсватини', name: 'ФК Эскадрон', rating: 4.142 },
+            { country: 'Лесото', name: 'Лиоли', rating: 4.132 },
+            { country: 'Эсватини', name: 'Мбабане Хайлендерс', rating: 4.123 },
+            { country: 'Малави', name: 'Уондерерс', rating: 4.113 },
+            { country: 'Мозамбик', name: 'Ферроварио', rating: 4.103 },
+            { country: 'Руанда', name: 'Сонгс', rating: 4.093 },
+            { country: 'ДР Конго', name: 'Вита Клуб', rating: 4.084 },
+            { country: 'Ангола', name: 'ФК Луанда', rating: 4.074 },
+            { country: 'Ангола', name: 'Кабушкорп', rating: 4.064 },
+            { country: 'Гвинея-Бисау', name: 'Улинья', rating: 4.054 },
+            { country: 'Кабо-Верде', name: 'Боавишта', rating: 4.045 },
+            { country: 'Сан-Томе и Принсипи', name: 'Спорт Принсипе', rating: 4.035 },
+            { country: 'Южный Судан', name: 'ФК Джуба', rating: 4.025 },
+            { country: 'Кения', name: 'Элан Клуб', rating: 4.015 },
+            { country: 'Кения', name: 'АФК Леопардс', rating: 4.006 },
+            { country: 'Мальдивы', name: 'Вилла', rating: 3.996 },
+            { country: 'Мальдивы', name: 'Нью Радиант', rating: 3.986 },
+            { country: 'Бангладеш', name: 'Абахани', rating: 3.976 },
+            { country: 'Индия', name: 'Мохун Баган', rating: 3.967 },
+            { country: 'Индия', name: 'Ист Бенгал', rating: 3.957 },
+            { country: 'Непал', name: 'Катманду', rating: 3.947 },
+            { country: 'Бутан', name: 'Тхимпху', rating: 3.937 },
+            { country: 'Шри-Ланка', name: 'Коломбо', rating: 3.928 },
+            { country: 'Пакистан', name: 'ФК Исламабад', rating: 3.918 },
+            { country: 'Пакистан', name: 'Карачи Юнайтед', rating: 3.908 },
+            { country: 'Афганистан', name: 'ФК Кабул', rating: 3.898 },
+            { country: 'Таджикистан', name: 'Истиклол', rating: 3.889 },
+            { country: 'Туркменистан', name: 'Ахал', rating: 3.879 },
+            { country: 'Кыргызстан', name: 'Дордой', rating: 3.869 },
+            { country: 'Монголия', name: 'Олимпик', rating: 3.859 },
+            { country: 'Макао', name: 'ФК Макао', rating: 3.850 },
+            { country: 'Гонконг', name: 'Тайпау', rating: 3.840 },
+            { country: 'Гонконг', name: 'Китчи', rating: 3.830 },
+            { country: 'Тайвань', name: 'Тайбэй Сити', rating: 3.820 },
+            { country: 'Камбоджа', name: 'Пномпень', rating: 3.811 },
+            { country: 'Лаос', name: 'Вьентьян', rating: 3.801 },
+            { country: 'Мьянма', name: 'Янгон Юнайтед', rating: 3.791 },
+            { country: 'Мьянма', name: 'Шан Юнайтед', rating: 3.781 },
+            { country: 'Таиланд', name: 'Бангкок Юнайтед', rating: 3.772 },
+            { country: 'Таиланд', name: 'Бурирам Юнайтед', rating: 3.762 },
+            { country: 'Малайзия', name: 'Джохор', rating: 3.752 },
+            { country: 'Сингапур', name: 'Сингапур Лайонс', rating: 3.742 },
+            { country: 'Индонезия', name: 'Бали', rating: 3.733 },
+            { country: 'Восточный Тимор', name: 'ФК Дили', rating: 3.723 },
+            { country: 'Папуа — Новая Гвинея', name: 'Хекари', rating: 3.713 },
+            { country: 'Соломоновы острова', name: 'Соломон Уорриорз', rating: 3.703 },
+            { country: 'Вануату', name: 'ФК Порт-Вила', rating: 3.694 },
+            { country: 'Тонга', name: 'Лотоха\'а', rating: 3.684 },
+            { country: 'Самоа', name: 'Тафуна', rating: 3.674 },
+            { country: 'Американское Самоа', name: 'Паго Ют', rating: 3.664 },
+            { country: 'Острова Кука', name: 'Ауки', rating: 3.655 },
+            { country: 'Фиджи', name: 'Мэджик', rating: 3.645 },
+            { country: 'Фиджи', name: 'Ба', rating: 3.635 },
+            { country: 'Тонга', name: 'Нукуалофа', rating: 3.625 },
+            { country: 'Новая Зеландия', name: 'Окленд Сити', rating: 3.538 },
+            { country: 'Новая Зеландия', name: 'Веллингтон', rating: 3.528 },
+            { country: 'Австралия', name: 'Ньюкасл Джетс', rating: 3.518 },
+            { country: 'Австралия', name: 'Сидней', rating: 3.508 },
+            { country: 'Австралия', name: 'Мельбурн Виктори', rating: 3.499 },
+            { country: 'Индонезия', name: 'Персейя', rating: 3.489 },
+            { country: 'Малайзия', name: 'ФК Куала-Лумпур', rating: 3.479 },
+            { country: 'Вьетнам', name: 'Хошимин', rating: 3.469 },
+            { country: 'Вьетнам', name: 'Ханой', rating: 3.460 },
+            { country: 'Южная Корея', name: 'ФК Сеул', rating: 3.450 },
+            { country: 'Южная Корея', name: 'Сувон', rating: 3.440 },
+            { country: 'Япония', name: 'Гамба Осака', rating: 3.430 },
+            { country: 'Япония', name: 'Токио Верди', rating: 3.421 },
+            { country: 'Китай', name: 'Бэйцзин Гоань', rating: 3.411 },
+            { country: 'Китай', name: 'Шанхай Порт', rating: 3.401 },
+            { country: 'Китай', name: 'Гуанчжоу', rating: 3.391 },
+            { country: 'Монголия', name: 'ФК Улан-Батор', rating: 3.382 },
+            { country: 'Туркменистан', name: 'ФК Ашхабад', rating: 3.372 },
+            { country: 'Таджикистан', name: 'ФК Душанбе', rating: 3.362 },
+            { country: 'Узбекистан', name: 'ФК Ташкент', rating: 3.352 },
+            { country: 'Турция', name: 'ФК Анкара', rating: 3.342 },
+            { country: 'Азербайджан', name: 'ФК Баку', rating: 3.333 },
+            { country: 'Грузия', name: 'ФК Тбилиси', rating: 3.323 },
+            { country: 'Грузия', name: 'Динамо Тбилиси', rating: 3.313 },
+            { country: 'Армения', name: 'Арарат', rating: 3.303 },
+            { country: 'Азербайджан', name: 'Нефтчи', rating: 3.294 },
+            { country: 'Казахстан', name: 'Кайрат', rating: 3.284 },
+            { country: 'Казахстан', name: 'Тобол', rating: 3.274 },
+            { country: 'Кыргызстан', name: 'ФК Бишкек', rating: 3.264 },
+            { country: 'Армения', name: 'ФК Ереван', rating: 3.255 },
+            { country: 'Молдова', name: 'ФК Кишинёв', rating: 3.245 },
+            { country: 'Молдова', name: 'Зимбру', rating: 3.235 },
+            { country: 'Болгария', name: 'ФК София', rating: 3.225 },
+            { country: 'Болгария', name: 'ЦСКА София', rating: 3.215 },
+            { country: 'Румыния', name: 'ФК Бухарест', rating: 3.206 },
+            { country: 'Румыния', name: 'Рапид', rating: 3.196 },
+            { country: 'Словакия', name: 'ФК Братислава', rating: 3.186 },
+            { country: 'Словакия', name: 'Слован', rating: 3.176 },
+            { country: 'Словения', name: 'ФК Любляна', rating: 3.167 },
+            { country: 'Словения', name: 'Олимпия Любляна', rating: 3.157 },
+            { country: 'Хорватия', name: 'ФК Загреб', rating: 3.147 },
+            { country: 'Хорватия', name: 'Хайдук', rating: 3.137 },
+            { country: 'Босния и Герцеговина', name: 'ФК Сараево', rating: 3.128 },
+            { country: 'Босния и Герцеговина', name: 'Зриньски', rating: 3.118 },
+            { country: 'Черногория', name: 'ФК Подгорица', rating: 3.108 },
+            { country: 'Черногория', name: 'Будучност', rating: 3.098 },
+            { country: 'Северная Македония', name: 'ФК Скопье', rating: 3.088 },
+            { country: 'Северная Македония', name: 'Вардар', rating: 3.079 },
+            { country: 'Албания', name: 'ФК Тирана', rating: 3.069 },
+            { country: 'Албания', name: 'Партизани', rating: 3.059 },
+            { country: 'Косово', name: 'ФК Приштина', rating: 3.049 },
+            { country: 'Косово', name: 'Дрита', rating: 3.039 },
+            { country: 'Сербия', name: 'ФК Белград', rating: 3.030 },
+            { country: 'Сербия', name: 'Партизан', rating: 3.020 },
+            { country: 'Хорватия', name: 'ФК Сплит', rating: 3.010 },
+            { country: 'Хорватия', name: 'Риека', rating: 3.000 },
+            { country: 'Австрия', name: 'ФК Вена', rating: 2.991 },
+            { country: 'Австрия', name: 'Рапид Вена', rating: 2.981 },
+            { country: 'Австрия', name: 'Зальцбург', rating: 2.971 },
+            { country: 'Швейцария', name: 'ФК Цюрих', rating: 2.961 },
+            { country: 'Швейцария', name: 'Базель', rating: 2.951 },
+            { country: 'Швейцария', name: 'Янг Бойз', rating: 2.942 },
+            { country: 'Швейцария', name: 'ФК Женева', rating: 2.932 },
+            { country: 'Бельгия', name: 'ФК Брюссель', rating: 2.922 },
+            { country: 'Бельгия', name: 'Брюгге', rating: 2.912 },
+            { country: 'Бельгия', name: 'Гент', rating: 2.902 },
+            { country: 'Нидерланды', name: 'ФК Амстердам', rating: 2.893 },
+            { country: 'Нидерланды', name: 'ПСВ', rating: 2.883 },
+            { country: 'Нидерланды', name: 'Фейеноорд', rating: 2.873 },
+            { country: 'Люксембург', name: 'ФК Люксембург', rating: 2.863 },
+            { country: 'Люксембург', name: 'Дюделанж', rating: 2.853 },
+            { country: 'Монако', name: 'ФК Монако', rating: 2.844 },
+            { country: 'Франция', name: 'Ницца', rating: 2.834 },
+            { country: 'Франция', name: 'Лилль', rating: 2.824 },
+            { country: 'Франция', name: 'Ренн', rating: 2.814 },
+            { country: 'Франция', name: 'Бордо', rating: 2.804 },
+            { country: 'Франция', name: 'Марсель', rating: 2.795 },
+            { country: 'Франция', name: 'Лион', rating: 2.785 },
+            { country: 'Франция', name: 'Страсбур', rating: 2.775 },
+            { country: 'Германия', name: 'Кёльн', rating: 2.765 },
+            { country: 'Германия', name: 'Боруссия Дортмунд', rating: 2.755 },
+            { country: 'Германия', name: 'Байер', rating: 2.746 },
+            { country: 'Германия', name: 'РБ Лейпциг', rating: 2.736 },
+            { country: 'Германия', name: 'Айнтрахт', rating: 2.726 },
+            { country: 'Германия', name: 'Штутгарт', rating: 2.716 },
+            { country: 'Германия', name: 'Ганновер', rating: 2.706 },
+            { country: 'Германия', name: 'ФК Гамбург', rating: 2.697 },
+            { country: 'Германия', name: 'Вердер', rating: 2.687 },
+            { country: 'Германия', name: 'Унион Берлин', rating: 2.677 },
+            { country: 'Германия', name: 'ФК Берлин', rating: 2.667 },
+            { country: 'Германия', name: 'Аугсбург', rating: 2.648 },
+            { country: 'Германия', name: 'Хоффенхайм', rating: 2.638 },
+            { country: 'Германия', name: 'Майнц', rating: 2.628 },
+            { country: 'Италия', name: 'ФК Милан', rating: 2.618 },
+            { country: 'Италия', name: 'Рома', rating: 2.608 },
+            { country: 'Италия', name: 'Наполи', rating: 2.599 },
+            { country: 'Италия', name: 'Лацио', rating: 2.589 },
+            { country: 'Италия', name: 'Фиорентина', rating: 2.579 },
+            { country: 'Италия', name: 'Аталанта', rating: 2.569 },
+            { country: 'Италия', name: 'Торино', rating: 2.559 },
+            { country: 'Италия', name: 'Дженоа', rating: 2.549 },
+            { country: 'Италия', name: 'Болонья', rating: 2.540 },
+            { country: 'Италия', name: 'Удинезе', rating: 2.530 },
+            { country: 'Италия', name: 'Сампдория', rating: 2.520 },
+            { country: 'Италия', name: 'Парма', rating: 2.510 },
+            { country: 'Италия', name: 'Монца', rating: 2.500 },
+            { country: 'Испания', name: 'Райо Вальекано', rating: 2.491 },
+            { country: 'Испания', name: 'Реал Сосьедад', rating: 2.481 },
+            { country: 'Испания', name: 'Севилья', rating: 2.471 },
+            { country: 'Испания', name: 'Вильярреал', rating: 2.461 },
+            { country: 'Испания', name: 'Валенсия', rating: 2.442 },
+            { country: 'Испания', name: 'Бильбао', rating: 2.432 },
+            { country: 'Испания', name: 'Бетис', rating: 2.422 },
+            { country: 'Россия', name: 'Ночные Волки', rating: 4.000 }
+        ];
+
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        let teams = TEAMS_DATA.map((t, idx) => ({
+            ...t,
+            id: idx,
+            flag: FLAGS[t.country] || '🏳️',
+            originalRating: t.rating
+        }));
+
+        const russianTeamNames = ['ФК Торнадо', 'Зенит', 'Ночные Волки'];
+        const russianTeamIds = teams.filter(t => russianTeamNames.includes(t.name)).map(t => t.id);
+
+        function isRussian(id) { return russianTeamIds.includes(id); }
+
+        // ==================== СОСТОЯНИЕ ====================
+        let state = {
+            myTeamId: null,
+            stage: 'menu',
+            group: { groups: [], currentGroupIdx: 0, played: 0, top4: [] },
+            knockout: { rounds: [], currentRound: 0, matches: [], winner: null },
+            champion: null,
+            matchInProgress: false,
+            ratingUpdated: false,
+            viewedGroup: 0,
+            groupStageFinished: false,
+            allMatchesGenerated: false,
+            isEliminated: false,
+            tournamentCompleted: false,
+            generatingKnockout: false
+        };
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('enl256_state');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    state = { ...state, ...parsed };
+                }
+            } catch(e) {}
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('enl256_state', JSON.stringify(state));
+            } catch(e) {}
+        }
+
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ====================
+        function getTeam(id) { return teams.find(t => t.id === id); }
+        function getMyTeam() { return state.myTeamId !== null ? getTeam(state.myTeamId) : null; }
+        function getRating(id) { const t = getTeam(id); return t ? t.rating : 2.5; }
+        function getTeamName(id) { const t = getTeam(id); return t ? t.name : 'Unknown'; }
+        function getTeamFlag(id) { const t = getTeam(id); return t ? t.flag : '🏳️'; }
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function showScreen(screen) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('screen-' + screen);
+            if (target) target.classList.add('active');
+            if (screen === 'menu') updateMenu();
+            if (screen === 'teams') renderTeamList();
+            if (screen === 'tournament') renderTournament();
+            if (screen === 'bracket') renderBracket();
+        }
+
+        function showModal(html) {
+            document.getElementById('modal-content').innerHTML = html;
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+        // ==================== СИМУЛЯЦИЯ МАТЧА С НИЧЬИМИ ====================
+        function simulateMatchAuto(homeId, awayId) {
+            const homeRating = getRating(homeId);
+            const awayRating = getRating(awayId);
+            
+            const diff = homeRating - awayRating;
+            let homeWinProb = 1 / (1 + Math.exp(-diff * 1.5));
+            homeWinProb = Math.min(Math.max(homeWinProb, 0.05), 0.95);
+            
+            // 15% вероятность ничьей
+            const rand = Math.random();
+            
+            // Ничья
+            if (rand < 0.15) {
+                const drawScores = [0, 1, 2, 3];
+                const score = drawScores[Math.floor(Math.random() * drawScores.length)];
+                return { home: score, away: score, isDraw: true };
+            }
+            
+            const rand2 = Math.random();
+            let homeGoals, awayGoals;
+            
+            if (rand2 < homeWinProb) {
+                const goalDiff = Math.floor(Math.random() * 3) + 1;
+                homeGoals = Math.floor(Math.random() * 3) + 1;
+                awayGoals = Math.max(0, homeGoals - goalDiff + Math.floor(Math.random() * 2));
+                if (Math.random() < 0.15 && homeWinProb > 0.6) {
+                    homeGoals += Math.floor(Math.random() * 2) + 1;
+                }
+            } else {
+                const goalDiff = Math.floor(Math.random() * 3) + 1;
+                awayGoals = Math.floor(Math.random() * 3) + 1;
+                homeGoals = Math.max(0, awayGoals - goalDiff + Math.floor(Math.random() * 2));
+                if (Math.random() < 0.15 && (1 - homeWinProb) > 0.6) {
+                    awayGoals += Math.floor(Math.random() * 2) + 1;
+                }
+            }
+            
+            if (homeGoals === awayGoals) {
+                homeGoals += 1;
+            }
+            
+            homeGoals = Math.min(homeGoals, 8);
+            awayGoals = Math.min(awayGoals, 8);
+            
+            return { home: homeGoals, away: awayGoals, isDraw: false };
+        }
+
+        // ==================== ГЕНЕРАЦИЯ МАТЧЕЙ ГРУППЫ ====================
+        function generateAllMatches(matches, table) {
+            const unplayed = matches.filter(m => !m.played);
+            let generated = 0;
+            
+            unplayed.forEach(m => {
+                const result = simulateMatchAuto(m.home, m.away);
+                m.homeScore = result.home;
+                m.awayScore = result.away;
+                m.isDraw = result.isDraw || false;
+                m.played = true;
+                generated++;
+                
+                const homeRow = table.find(r => r.id === m.home);
+                const awayRow = table.find(r => r.id === m.away);
+                if (homeRow) {
+                    homeRow.played++;
+                    homeRow.gf += result.home;
+                    homeRow.ga += result.away;
+                    homeRow.gd = homeRow.gf - homeRow.ga;
+                    if (result.home > result.away) homeRow.pts += 3;
+                    else if (result.home === result.away) homeRow.pts += 1;
+                }
+                if (awayRow) {
+                    awayRow.played++;
+                    awayRow.gf += result.away;
+                    awayRow.ga += result.home;
+                    awayRow.gd = awayRow.gf - awayRow.ga;
+                    if (result.away > result.home) awayRow.pts += 3;
+                    else if (result.home === result.away) awayRow.pts += 1;
+                }
+            });
+            
+            return generated;
+        }
+
+        // ==================== ПОВЫШЕНИЕ РЕЙТИНГА ====================
+        function updateRatingOnWin(teamId) {
+            const team = getTeam(teamId);
+            if (!team) return;
+            let newRating = team.rating + 1.0;
+            if (newRating > 5.0) newRating = 5.0;
+            team.rating = Math.round(newRating * 1000) / 1000;
+            state.ratingUpdated = true;
+            saveState();
+            teams.sort((a, b) => b.rating - a.rating);
+            teams.forEach((t, idx) => t.id = idx);
+        }
+
+        // ==================== МЕНЮ ====================
+        function updateMenu() {
+            const myTeam = getMyTeam();
+            document.getElementById('menu-my-team').textContent = myTeam ? `${myTeam.flag} ${myTeam.name} (${myTeam.rating.toFixed(3)})` : 'Команда не выбрана';
+            document.getElementById('menu-champion').textContent = state.champion !== null ? `${getTeamFlag(state.champion)} ${getTeamName(state.champion)}` : '—';
+            const stageMap = { 'menu': 'Ожидание', 'group': 'Групповой этап', 'knockout': 'Плей-офф', 'finished': 'Завершён' };
+            document.getElementById('menu-stage').textContent = stageMap[state.stage] || '—';
+            if (myTeam) {
+                document.getElementById('menu-rating').textContent = `Рейтинг: ${myTeam.rating.toFixed(3)}`;
+            } else {
+                document.getElementById('menu-rating').textContent = '—';
+            }
+            
+            const statusEl = document.getElementById('menu-status');
+            const championDisplay = document.getElementById('champion-display');
+            
+            if (state.champion !== null) {
+                const isMyChampion = state.champion === state.myTeamId;
+                championDisplay.style.display = 'block';
+                championDisplay.innerHTML = `
+                    <div class="champion-card">
+                        <div class="trophy">🏆</div>
+                        <div class="name">${getTeamFlag(state.champion)} ${getTeamName(state.champion)}</div>
+                        <div class="sub">ЧЕМПИОН ТУРНИРА</div>
+                        ${isMyChampion ? '<div style="color:#2ecc71; font-weight:700; margin-top:8px;">⭐ ВЫ ЧЕМПИОН! Поздравляем!</div>' : ''}
+                    </div>
+                    <button class="btn btn-gold" onclick="showScreen('bracket')" style="margin-top:8px;">📋 Смотреть полную сетку</button>
+                `;
+            } else {
+                championDisplay.style.display = 'none';
+            }
+            
+            if (state.isEliminated && state.stage !== 'finished' && state.stage !== 'menu') {
+                statusEl.innerHTML = `<span class="eliminated-text">❌ Вы вылетели из турнира. Смотрите сетку, чтобы узнать чемпиона!</span>`;
+            } else if (state.stage === 'finished') {
+                if (state.champion === state.myTeamId) {
+                    statusEl.innerHTML = `<span style="color:#f1c40f;">🏆 ВЫ ЧЕМПИОН! Поздравляем!</span>`;
+                } else {
+                    statusEl.innerHTML = `<span style="color:#f1c40f;">🏆 Чемпион: ${getTeamFlag(state.champion)} ${getTeamName(state.champion)}</span>`;
+                }
+            } else {
+                statusEl.innerHTML = '';
+            }
+        }
+
+        // ==================== ВЫБОР КОМАНДЫ ====================
+        function renderTeamList() {
+            const container = document.getElementById('team-list');
+            container.innerHTML = '';
+            teams.forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'team-card' + (state.myTeamId === t.id ? ' selected' : '');
+                const ratingClass = t.rating < 1.0 ? 'very-low' : t.rating < 1.5 ? 'low' : '';
+                const isRus = isRussian(t.id);
+                div.innerHTML = `
+                    <span class="name">
+                        <span class="flag">${t.flag}</span>
+                        ${t.name}
+                        ${isRus ? '<span class="rus-badge">🇷🇺 Россия</span>' : ''}
+                        ${state.champion === t.id ? '<span class="champion-badge">🏆 Чемпион!</span>' : ''}
+                    </span>
+                    <span class="rating ${ratingClass}">${t.rating.toFixed(3)}</span>
+                `;
+                div.onclick = () => selectTeam(t.id);
+                container.appendChild(div);
+            });
+            updateSelectedInfo();
+        }
+
+        function updateSelectedInfo() {
+            const container = document.getElementById('selected-team-info');
+            const myTeam = getMyTeam();
+            if (!myTeam) {
+                container.innerHTML = '<p style="color:#7f8c8d;">Выберите команду, чтобы начать турнир</p>';
+                return;
+            }
+            const isRus = isRussian(myTeam.id);
+            const isChampion = state.champion === myTeam.id;
+            container.innerHTML = `
+                <div class="info-box ${isChampion ? 'gold' : ''}">
+                    <strong>✅ Ваша команда: ${myTeam.flag} ${myTeam.name}</strong> (рейтинг ${myTeam.rating.toFixed(3)})
+                    ${isRus ? ' 🇷🇺 Российская команда' : ''}
+                    ${isChampion ? ' 🏆 ЧЕМПИОН!' : ''}
+                    <br>📌 Прямой выход в групповой этап (256 команд)
+                    <br><button class="btn btn-green" style="margin-top:12px;" onclick="startTournament()">▶ Начать турнир</button>
+                    ${isChampion ? `<button class="btn btn-gold" style="margin-top:12px; margin-left:8px;" onclick="showScreen('bracket')">📋 Смотреть сетку</button>` : ''}
+                </div>
+            `;
+        }
+
+        function selectTeam(id) {
+            state.myTeamId = id;
+            state.stage = 'menu';
+            state.isEliminated = false;
+            state.tournamentCompleted = false;
+            saveState();
+            renderTeamList();
+            updateSelectedInfo();
+            updateMenu();
+        }
+
+        // ==================== СТАРТ ТУРНИРА ====================
+        function startTournament() {
+            const myTeam = getMyTeam();
+            if (!myTeam) return;
+            state.stage = 'group';
+            state.isEliminated = false;
+            state.tournamentCompleted = false;
+            initGroupStage();
+            saveState();
+            showScreen('tournament');
+            renderTournament();
+        }
+
+        // ==================== ГРУППОВОЙ ЭТАП ====================
+        function initGroupStage() {
+            const allIds = teams.map(t => t.id);
+            const participants = [...allIds];
+            shuffleArray(participants);
+            
+            const groups = [];
+            const numGroups = 16; // 16 групп по 16 команд
+            const perGroup = 16;
+            
+            for (let i = 0; i < numGroups; i++) {
+                const start = i * perGroup;
+                const end = i === numGroups - 1 ? participants.length : start + perGroup;
+                groups.push({
+                    name: String.fromCharCode(65 + i),
+                    teams: participants.slice(start, end),
+                    matches: [],
+                    table: [],
+                    played: 0
+                });
+            }
+            
+            groups.forEach(g => {
+                const matches = [];
+                for (let i = 0; i < g.teams.length; i++) {
+                    for (let j = i + 1; j < g.teams.length; j++) {
+                        matches.push({ home: g.teams[i], away: g.teams[j], homeScore: null, awayScore: null, played: false, isDraw: false });
+                    }
+                }
+                g.matches = matches;
+                g.table = g.teams.map(id => ({ id, pts: 0, gf: 0, ga: 0, gd: 0, played: 0 }));
+            });
+            
+            state.group.groups = groups;
+            state.group.currentGroupIdx = groups.findIndex(g => g.teams.includes(state.myTeamId));
+            if (state.group.currentGroupIdx === -1) state.group.currentGroupIdx = 0;
+            state.group.played = 0;
+            state.group.top4 = [];
+            state.viewedGroup = state.group.currentGroupIdx;
+            state.groupStageFinished = false;
+            state.allMatchesGenerated = false;
+            state.isEliminated = false;
+            saveState();
+        }
+
+        function renderGroupStage() {
+            const container = document.getElementById('tournament-content');
+            const myTeam = getMyTeam();
+            if (!myTeam) return;
+            const groups = state.group.groups;
+            
+            const myGroup = groups[state.group.currentGroupIdx];
+            if (myGroup) {
+                const totalUnplayed = myGroup.matches.filter(m => !m.played).length;
+                if (totalUnplayed > 0 && !state.allMatchesGenerated) {
+                    state.allMatchesGenerated = true;
+                    generateAllMatches(myGroup.matches, myGroup.table);
+                    saveState();
+                }
+            }
+            
+            let groupSelector = `
+                <div class="group-selector">
+                    <span style="color:#7f8c8d; font-size:13px; margin-right:8px;">Группы:</span>
+            `;
+            groups.forEach((g, idx) => {
+                const isActive = idx === state.viewedGroup;
+                groupSelector += `
+                    <button class="group-btn ${isActive ? 'active' : ''}" onclick="switchGroup(${idx})">
+                        Группа ${g.name}
+                    </button>
+                `;
+            });
+            groupSelector += '</div>';
+            
+            const group = groups[state.viewedGroup];
+            if (!group) {
+                container.innerHTML = '<p style="color:#e74c3c;">Группа не найдена</p>';
+                return;
+            }
+            
+            const sorted = [...group.table].sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+            const myRow = sorted.find(r => r.id === myTeam.id);
+            const myPos = myRow ? sorted.indexOf(myRow) + 1 : null;
+            // Топ-4 выходят в плей-офф (из 16 команд)
+            const inTop4 = myPos !== null && myPos <= 4;
+            const totalMatches = group.matches.length;
+            const played = group.matches.filter(m => m.played).length;
+            const isFinished = played >= totalMatches;
+            
+            const isMyGroup = state.viewedGroup === state.group.currentGroupIdx;
+            
+            if (isFinished && isMyGroup && !state.groupStageFinished) {
+                state.groupStageFinished = true;
+                const top4 = sorted.slice(0, 4).map(r => r.id);
+                state.group.top4 = top4;
+                if (!top4.includes(myTeam.id)) {
+                    state.isEliminated = true;
+                }
+                saveState();
+                setTimeout(() => updateMenu(), 100);
+            }
+            
+            if (state.isEliminated && isFinished && isMyGroup) {
+                container.innerHTML = `
+                    <div class="spectator-mode">
+                        <span>👀 РЕЖИМ НАБЛЮДАТЕЛЯ</span>
+                        <p style="color:#7f8c8d; margin-top:8px;">Вы вылетели из турнира, но можете следить за его ходом!</p>
+                        <button class="btn btn-gold" style="margin-top:10px;" onclick="showScreen('bracket')">🏆 Смотреть сетку</button>
+                        <button class="btn btn-blue" style="margin-top:10px; margin-left:8px;" onclick="resetGame()">🔄 Начать заново</button>
+                    </div>
+                `;
+                renderEliminatedGroupView(container, groups, myTeam);
+                return;
+            }
+
+            let html = groupSelector;
+            html += `
+                <div class="flex-between">
+                    <h2>📊 Группа ${group.name}</h2>
+                    <span style="color:#7f8c8d; font-size:14px;">Топ-4 выходят в плей-офф</span>
+                </div>
+            `;
+            
+            if (isMyGroup && myRow) {
+                html += `
+                    <div class="qualification-status">
+                        <div class="stat"><span class="label">Ваша позиция</span><span class="value ${inTop4 ? 'green' : 'red'}">#${myPos}</span></div>
+                        <div class="stat"><span class="label">Очки</span><span class="value">${myRow ? myRow.pts : 0}</span></div>
+                        <div class="stat"><span class="label">РМ</span><span class="value">${myRow ? myRow.gd : 0}</span></div>
+                        <div class="stat"><span class="label">Сыграно</span><span class="value">${myRow ? myRow.played : 0}/${group.teams.length-1}</span></div>
+                    </div>
+                `;
+            }
+            
+            if (isFinished && isMyGroup) {
+                html += `<div class="info-box">✅ Все матчи сыграны!</div>`;
+            } else if (isMyGroup) {
+                html += `<div class="info-box">⏳ Генерация всех матчей...</div>`;
+            }
+            
+            if (isMyGroup && myRow) {
+                html += `
+                    <div class="info-box ${inTop4 ? '' : 'danger'}">
+                        ${inTop4 ? '✅ Вы в топ-4! Продолжайте борьбу.' : '⚠️ Вам нужно подняться в топ-4!'}
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>Команда</th><th>И</th><th>РМ</th><th>О</th></tr></thead>
+                        <tbody>
+                            ${sorted.map((r, idx) => {
+                                const isMy = r.id === myTeam.id;
+                                const isQualified = idx < 4;
+                                const isRus = isRussian(r.id);
+                                return `<tr class="${isMy ? 'highlight' : isQualified ? 'qualified' : ''}">
+                                    <td>${idx+1}</td>
+                                    <td>${getTeamFlag(r.id)} ${getTeamName(r.id)} ${isMy ? '⭐' : ''} ${isRus ? '🇷🇺' : ''} ${isQualified ? '<span class="qualified-badge">✅ Выход</span>' : ''}</td>
+                                    <td>${r.played}</td>
+                                    <td>${r.gd}</td>
+                                    <td><strong>${r.pts}</strong></td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+            `;
+            
+            if (isMyGroup) {
+                if (isFinished && inTop4) {
+                    html += `<button class="btn btn-gold" onclick="advanceFromGroup()">➡️ Выйти в плей-офф</button>`;
+                }
+                if (isFinished && !inTop4 && myRow) {
+                    html += `<button class="btn btn-red" onclick="showEliminatedModal()">❌ Вы вылетели</button>`;
+                }
+                if (isFinished && inTop4) {
+                    html += `<span style="color:#2ecc71; font-weight:700;">✅ Выход в плей-офф!</span>`;
+                }
+            } else {
+                html += `<span style="color:#7f8c8d; font-size:14px;">👀 Просмотр группы ${group.name}</span>`;
+            }
+            
+            html += `
+                </div>
+                ${isFinished ? `<div style="margin-top:12px;"><button class="btn btn-gold" onclick="showScreen('bracket')">🏆 Смотреть сетку плей-офф</button></div>` : ''}
+            `;
+            container.innerHTML = html;
+        }
+
+        function renderEliminatedGroupView(container, groups, myTeam) {
+            let html = `
+                <div class="flex-between">
+                    <h2>📊 Итоговые таблицы групп</h2>
+                    <span style="color:#7f8c8d; font-size:14px;">Топ-4 из каждой группы выходят в плей-офф</span>
+                </div>
+                <div class="info-box gold">
+                    <strong>👀 Вы вылетели, но турнир продолжается!</strong>
+                    <br>Вы можете следить за ходом турнира и увидеть чемпиона в сетке плей-офф.
+                </div>
+            `;
+            
+            groups.forEach((g, idx) => {
+                const sorted = [...g.table].sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+                const isMyGroup = g.teams.includes(myTeam.id);
+                html += `
+                    <div style="margin-top:16px;">
+                        <h3 style="color:#2ecc71;">Группа ${g.name} ${isMyGroup ? '⭐' : ''}</h3>
+                        <div class="table-wrap">
+                            <table>
+                                <thead><tr><th>#</th><th>Команда</th><th>И</th><th>РМ</th><th>О</th></tr></thead>
+                                <tbody>
+                                    ${sorted.map((r, idx) => {
+                                        const isMy = r.id === myTeam.id;
+                                        const isQualified = idx < 4;
+                                        const isRus = isRussian(r.id);
+                                        return `<tr class="${isMy ? 'highlight' : isQualified ? 'qualified' : ''}">
+                                            <td>${idx+1}</td>
+                                            <td>${getTeamFlag(r.id)} ${getTeamName(r.id)} ${isMy ? '⭐ (вы)' : ''} ${isRus ? '🇷🇺' : ''} ${isQualified ? '<span class="qualified-badge">✅ Выход</span>' : ''}</td>
+                                            <td>${r.played}</td>
+                                            <td>${r.gd}</td>
+                                            <td><strong>${r.pts}</strong></td>
+                                        </tr>`;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+                    <button class="btn btn-gold" onclick="showScreen('bracket')">🏆 Смотреть сетку плей-офф</button>
+                    <button class="btn btn-blue" onclick="resetGame()">🔄 Начать заново</button>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function switchGroup(idx) {
+            state.viewedGroup = idx;
+            saveState();
+            renderTournament();
+        }
+
+        function advanceFromGroup() {
+            const groups = state.group.groups;
+            const myGroup = groups[state.group.currentGroupIdx];
+            const sorted = [...myGroup.table].sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+            const top4 = sorted.slice(0, 4).map(r => r.id);
+            state.group.top4 = top4;
+            state.stage = 'knockout';
+            state.isEliminated = false;
+            initKnockout();
+            saveState();
+            renderTournament();
+        }
+
+        function showEliminatedModal() {
+            showModal(`
+                <h2>😞 Вы вылетели!</h2>
+                <p style="color:#7f8c8d; margin:12px 0;">Ваша команда не прошла дальше (топ-4).</p>
+                <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                    <button class="btn btn-gold" onclick="closeModal(); showScreen('bracket');">🏆 Смотреть сетку</button>
+                    <button class="btn btn-blue" onclick="closeModal(); resetGame();">🔄 Начать заново</button>
+                </div>
+            `);
+        }
+
+        // ==================== ПЛЕЙ-ОФФ ====================
+        function initKnockout() {
+            // Собираем топ-4 из каждой группы (16 групп * 4 = 64 команды)
+            let participants = [];
+            const groups = state.group.groups;
+            groups.forEach(g => {
+                const sorted = [...g.table].sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+                sorted.slice(0, 4).forEach(r => {
+                    if (!participants.includes(r.id)) participants.push(r.id);
+                });
+            });
+            
+            // Если меньше 64, добиваем лучшими по рейтингу
+            if (participants.length < 64) {
+                const rest = teams.map(t => t.id).filter(id => !participants.includes(id));
+                rest.sort((a, b) => getRating(b) - getRating(a));
+                while (participants.length < 64 && rest.length > 0) {
+                    participants.push(rest.shift());
+                }
+            }
+            
+            shuffleArray(participants);
+            
+            const rounds = [
+                { name: '1/32', matches: [] },
+                { name: '1/16', matches: [] },
+                { name: '1/8', matches: [] },
+                { name: '1/4', matches: [] },
+                { name: '1/2', matches: [] },
+                { name: 'Финал', matches: [] }
+            ];
+            
+            for (let i = 0; i < participants.length; i += 2) {
+                if (i + 1 < participants.length) {
+                    rounds[0].matches.push({ home: participants[i], away: participants[i+1], homeScore: null, awayScore: null, played: false, isDraw: false });
+                }
+            }
+            
+            state.knockout.rounds = rounds;
+            state.knockout.currentRound = 0;
+            state.knockout.winner = null;
+            state.generatingKnockout = false;
+            saveState();
+            
+            autoPlayAllKnockoutRounds();
+        }
+
+        function autoPlayAllKnockoutRounds() {
+            if (state.generatingKnockout) return;
+            state.generatingKnockout = true;
+            
+            const rounds = state.knockout.rounds;
+            let currentRoundIdx = 0;
+            
+            function processNextRound() {
+                if (currentRoundIdx >= rounds.length) {
+                    state.generatingKnockout = false;
+                    const finalRound = rounds[rounds.length - 1];
+                    if (finalRound.matches.length > 0 && finalRound.matches[0].played) {
+                        const m = finalRound.matches[0];
+                        let winner;
+                        if (m.homeScore > m.awayScore) winner = m.home;
+                        else if (m.awayScore > m.homeScore) winner = m.away;
+                        else winner = m.home;
+                        state.champion = winner;
+                        state.stage = 'finished';
+                        state.tournamentCompleted = true;
+                        
+                        const myTeam = getMyTeam();
+                        if (myTeam && winner === myTeam.id) {
+                            updateRatingOnWin(myTeam.id);
+                        }
+                        saveState();
+                        updateMenu();
+                        renderTournament();
+                    }
+                    return;
+                }
+                
+                const round = rounds[currentRoundIdx];
+                
+                if (round.matches.length === 0) {
+                    currentRoundIdx++;
+                    processNextRound();
+                    return;
+                }
+                
+                round.matches.forEach(m => {
+                    if (!m.played) {
+                        const result = simulateMatchAuto(m.home, m.away);
+                        m.homeScore = result.home;
+                        m.awayScore = result.away;
+                        m.isDraw = result.isDraw || false;
+                        m.played = true;
+                    }
+                });
+                
+                const myTeam = getMyTeam();
+                if (myTeam) {
+                    const myMatch = round.matches.find(m => m.home === myTeam.id || m.away === myTeam.id);
+                    if (myMatch && myMatch.played) {
+                        const myScore = myMatch.home === myTeam.id ? myMatch.homeScore : myMatch.awayScore;
+                        const oppScore = myMatch.home === myTeam.id ? myMatch.awayScore : myMatch.homeScore;
+                        if (myScore < oppScore) {
+                            state.isEliminated = true;
+                        } else if (myScore > oppScore) {
+                            state.isEliminated = false;
+                        } else {
+                            // Ничья в плей-офф — победа по рейтингу
+                            const myRating = getRating(myTeam.id);
+                            const oppRating = getRating(myMatch.home === myTeam.id ? myMatch.away : myMatch.home);
+                            if (myRating < oppRating) {
+                                state.isEliminated = true;
+                            } else {
+                                state.isEliminated = false;
+                            }
+                        }
+                        saveState();
+                    }
+                }
+                
+                if (currentRoundIdx < rounds.length - 1) {
+                    const nextRound = rounds[currentRoundIdx + 1];
+                    const winners = round.matches
+                        .filter(m => m.played)
+                        .map(m => {
+                            if (m.homeScore > m.awayScore) return m.home;
+                            if (m.awayScore > m.homeScore) return m.away;
+                            return m.home;
+                        });
+                    
+                    const nextMatches = [];
+                    for (let i = 0; i < winners.length; i += 2) {
+                        if (i + 1 < winners.length) {
+                            nextMatches.push({ 
+                                home: winners[i], 
+                                away: winners[i+1], 
+                                homeScore: null, 
+                                awayScore: null, 
+                                played: false,
+                                isDraw: false
+                            });
+                        }
+                    }
+                    nextRound.matches = nextMatches;
+                    saveState();
+                }
+                
+                currentRoundIdx++;
+                setTimeout(() => {
+                    renderTournament();
+                    processNextRound();
+                }, 50);
+            }
+            
+            setTimeout(processNextRound, 100);
+        }
+
+        // ==================== ТУРНИР ====================
+        function renderTournament() {
+            const container = document.getElementById('tournament-content');
+            const myTeam = getMyTeam();
+            if (!myTeam) {
+                container.innerHTML = '<p style="color:#7f8c8d; text-align:center; padding:40px 0;">Выберите команду в разделе "Команды"</p>';
+                return;
+            }
+            
+            if (state.stage === 'group') {
+                renderGroupStage();
+            } else if (state.stage === 'knockout' || state.stage === 'finished') {
+                renderKnockout();
+            } else {
+                container.innerHTML = '<p style="color:#7f8c8d; text-align:center; padding:40px 0;">Турнир не начат. Выберите команду.</p>';
+            }
+            updateMenu();
+        }
+
+        // ==================== ПЛЕЙ-ОФФ ОТОБРАЖЕНИЕ ====================
+        function renderKnockout() {
+            const container = document.getElementById('tournament-content');
+            const myTeam = getMyTeam();
+            if (!myTeam) return;
+            const rounds = state.knockout.rounds;
+            
+            if (state.generatingKnockout) {
+                container.innerHTML = `
+                    <div class="auto-generate-progress">
+                        <div class="spinner">⚙️</div>
+                        <p style="margin-top:8px; color:#f1c40f;">Генерация матчей плей-офф...</p>
+                        <p style="color:#7f8c8d; font-size:13px;">Пожалуйста, подождите, все матчи генерируются автоматически</p>
+                        <button class="btn btn-gold" style="margin-top:8px;" onclick="showScreen('bracket')">📋 Смотреть сетку</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (!rounds || rounds.length === 0 || rounds.every(r => r.matches.length === 0)) {
+                container.innerHTML = '<p style="color:#7f8c8d; text-align:center; padding:40px 0;">Плей-офф ещё не начался</p>';
+                return;
+            }
+            
+            if (state.champion !== null) {
+                const isMyChampion = state.champion === myTeam.id;
+                container.innerHTML = `
+                    <div style="text-align:center; padding:20px 0;">
+                        <h2>🏆 Турнир завершён!</h2>
+                        <div class="champion-card" style="max-width:400px; margin:16px auto;">
+                            <div class="trophy">🏆</div>
+                            <div class="name">${getTeamFlag(state.champion)} ${getTeamName(state.champion)}</div>
+                            <div class="sub">ЧЕМПИОН ТУРНИРА</div>
+                            ${isMyChampion ? '<div style="color:#2ecc71; font-weight:700; margin-top:8px;">⭐ ВЫ ЧЕМПИОН! Поздравляем!</div>' : ''}
+                        </div>
+                        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                            <button class="btn btn-gold" onclick="showScreen('bracket')">📋 Смотреть полную сетку</button>
+                            <button class="btn btn-blue" onclick="resetGame()">🔄 Начать заново</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="flex-between">
+                    <h2>🏆 Плей-офф (64 команды)</h2>
+                    <span style="color:#7f8c8d; font-size:14px;">Топ-4 из каждой группы</span>
+                </div>
+                <div style="margin:12px 0;">
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        ${rounds.map((r, idx) => {
+                            if (r.matches.length === 0) return '';
+                            const played = r.matches.filter(m => m.played).length;
+                            const total = r.matches.length;
+                            const isDone = played === total && total > 0;
+                            const roundLabels = ['1/32', '1/16', '1/8', '1/4', '1/2', 'Финал'];
+                            return `<span style="padding:4px 12px; border-radius:16px; font-size:12px; background:${isDone ? 'rgba(46,204,113,0.15)' : 'rgba(255,255,255,0.05)'}; border:1px solid ${isDone ? '#2ecc71' : 'transparent'};">
+                                ${roundLabels[idx] || ''} ${isDone ? '✅' : '⏳'} (${played}/${total})
+                            </span>`;
+                        }).join('')}
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; margin:16px 0;">
+            `;
+            
+            // Показываем все матчи текущего раунда, где есть хотя бы один несыгранный
+            let currentRoundIdx = rounds.findIndex(r => r.matches.some(m => !m.played));
+            if (currentRoundIdx === -1) currentRoundIdx = rounds.length - 1;
+            const round = rounds[currentRoundIdx] || rounds[0];
+            const roundLabels = ['1/32', '1/16', '1/8', '1/4', '1/2', 'Финал'];
+            
+            if (round && round.matches.length > 0) {
+                html += `<div style="grid-column:1/-1;"><h3 style="color:#f1c40f;">${roundLabels[currentRoundIdx] || 'Раунд'}</h3></div>`;
+                round.matches.forEach(m => {
+                    const isMy = m.home === myTeam.id || m.away === myTeam.id;
+                    const homeScore = m.played ? m.homeScore : '?';
+                    const awayScore = m.played ? m.awayScore : '?';
+                    const isDraw = m.isDraw || false;
+                    
+                    let scoreClass = 'draw';
+                    let drawBadge = '';
+                    if (m.played) {
+                        if (m.homeScore > m.awayScore) scoreClass = 'win';
+                        else if (m.awayScore > m.homeScore) scoreClass = 'lose';
+                        else { scoreClass = 'draw'; drawBadge = '<span class="draw-badge">🤝 ничья</span>'; }
+                    }
+                    
+                    html += `
+                        <div class="match-card" style="${isMy ? 'border-color:#f1c40f;' : ''}">
+                            <div class="teams">
+                                <div class="t">${getTeamFlag(m.home)} ${getTeamName(m.home)} ${m.home === myTeam.id ? '⭐' : ''}</div>
+                                <div class="t">${getTeamFlag(m.away)} ${getTeamName(m.away)} ${m.away === myTeam.id ? '⭐' : ''}</div>
+                                ${drawBadge}
+                            </div>
+                            <div class="score ${scoreClass}">${homeScore} : ${awayScore}</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            html += `
+                </div>
+                <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+                    <button class="btn btn-gold" onclick="showScreen('bracket')">📋 Смотреть полную сетку</button>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        // ==================== СЕТКА ====================
+        function renderBracket() {
+            const container = document.getElementById('bracket-content');
+            const rounds = state.knockout.rounds;
+            
+            if (state.champion !== null) {
+                const myTeam = getMyTeam();
+                const isMyChampion = state.champion === (myTeam ? myTeam.id : null);
+                
+                let html = `
+                    <div class="champion-card" style="margin-bottom:20px;">
+                        <div class="trophy">🏆</div>
+                        <div class="name">${getTeamFlag(state.champion)} ${getTeamName(state.champion)}</div>
+                        <div class="sub">ЧЕМПИОН ТУРНИРА (256 команд)</div>
+                        ${isMyChampion ? '<div style="color:#2ecc71; font-weight:700; margin-top:8px;">⭐ ВЫ ЧЕМПИОН! Поздравляем!</div>' : ''}
+                    </div>
+                `;
+                
+                if (rounds && rounds.length > 0 && rounds.some(r => r.matches.length > 0)) {
+                    html += '<div class="bracket">';
+                    const roundLabels = ['1/32', '1/16', '1/8', '1/4', '1/2', 'Финал'];
+                    rounds.forEach((r, ri) => {
+                        if (r.matches.length === 0) {
+                            html += `<div class="bracket-round"><div class="round-label">${roundLabels[ri] || ''}</div><div style="color:#7f8c8d; font-size:10px; text-align:center;">—</div></div>`;
+                            return;
+                        }
+                        html += `<div class="bracket-round"><div class="round-label">${roundLabels[ri] || ''}</div>`;
+                        r.matches.forEach(m => {
+                            const isMyHome = m.home === (myTeam ? myTeam.id : null);
+                            const isMyAway = m.away === (myTeam ? myTeam.id : null);
+                            const isMyMatch = isMyHome || isMyAway;
+                            
+                            let homeClass = isMyHome ? 'highlight' : '';
+                            let awayClass = isMyAway ? 'highlight' : '';
+                            
+                            let scoreText = '—';
+                            let scoreClass = '';
+                            if (m.played) {
+                                scoreText = `${m.homeScore} : ${m.awayScore}`;
+                                if (m.homeScore > m.awayScore) scoreClass = 'winner';
+                                else if (m.awayScore > m.homeScore) scoreClass = 'winner';
+                                else scoreClass = 'draw-score';
+                            }
+                            
+                            html += `<div class="bracket-match">
+                                <div class="team-name ${homeClass}">
+                                    <span>${getTeamFlag(m.home)} ${getTeamName(m.home)}</span>
+                                    <span class="score-text ${scoreClass}">${m.played ? m.homeScore : '—'}</span>
+                                </div>
+                                <div class="team-name ${awayClass}">
+                                    <span>${getTeamFlag(m.away)} ${getTeamName(m.away)}</span>
+                                    <span class="score-text ${scoreClass}">${m.played ? m.awayScore : '—'}</span>
+                                </div>
+                                ${m.played && m.homeScore === m.awayScore ? '<div style="color:#3498db; font-size:8px; text-align:center;">🤝 НИЧЬЯ</div>' : ''}
+                            </div>`;
+                        });
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                }
+                container.innerHTML = html;
+                return;
+            }
+            
+            if (!rounds || rounds.length === 0 || rounds.every(r => r.matches.length === 0)) {
+                container.innerHTML = '<p style="color:#7f8c8d; text-align:center; padding:40px 0;">Сетка будет доступна после выхода в плей-офф</p>';
+                return;
+            }
+            
+            const myTeam = getMyTeam();
+            let html = '<div class="bracket">';
+            const roundLabels = ['1/32', '1/16', '1/8', '1/4', '1/2', 'Финал'];
+            rounds.forEach((r, ri) => {
+                if (r.matches.length === 0) {
+                    html += `<div class="bracket-round"><div class="round-label">${roundLabels[ri] || ''}</div><div style="color:#7f8c8d; font-size:10px; text-align:center;">—</div></div>`;
+                    return;
+                }
+                html += `<div class="bracket-round"><div class="round-label">${roundLabels[ri] || ''}</div>`;
+                r.matches.forEach(m => {
+                    const isMyHome = m.home === (myTeam ? myTeam.id : null);
+                    const isMyAway = m.away === (myTeam ? myTeam.id : null);
+                    const isMyMatch = isMyHome || isMyAway;
+                    
+                    let homeClass = isMyHome ? 'highlight' : '';
+                    let awayClass = isMyAway ? 'highlight' : '';
+                    
+                    let scoreText = '—';
+                    let scoreClass = '';
+                    if (m.played) {
+                        scoreText = `${m.homeScore} : ${m.awayScore}`;
+                        if (m.homeScore > m.awayScore) scoreClass = 'winner';
+                        else if (m.awayScore > m.homeScore) scoreClass = 'winner';
+                        else scoreClass = 'draw-score';
+                    }
+                    
+                    html += `<div class="bracket-match">
+                        <div class="team-name ${homeClass}">
+                            <span>${getTeamFlag(m.home)} ${getTeamName(m.home)}</span>
+                            <span class="score-text ${scoreClass}">${m.played ? m.homeScore : '—'}</span>
+                        </div>
+                        <div class="team-name ${awayClass}">
+                            <span>${getTeamFlag(m.away)} ${getTeamName(m.away)}</span>
+                            <span class="score-text ${scoreClass}">${m.played ? m.awayScore : '—'}</span>
+                        </div>
+                        ${m.played && m.homeScore === m.awayScore ? '<div style="color:#3498db; font-size:8px; text-align:center;">🤝 НИЧЬЯ</div>' : ''}
+                    </div>`;
+                });
+                html += '</div>';
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ==================== СБРОС ====================
+        function resetGame() {
+            if (confirm('Сбросить весь прогресс?')) {
+                localStorage.removeItem('enl256_state');
+                teams.forEach(t => { t.rating = t.originalRating; });
+                teams.sort((a, b) => b.rating - a.rating);
+                teams.forEach((t, idx) => t.id = idx);
+                
+                state = {
+                    myTeamId: null,
+                    stage: 'menu',
+                    group: { groups: [], currentGroupIdx: 0, played: 0, top4: [] },
+                    knockout: { rounds: [], currentRound: 0, matches: [], winner: null },
+                    champion: null,
+                    matchInProgress: false,
+                    ratingUpdated: false,
+                    viewedGroup: 0,
+                    groupStageFinished: false,
+                    allMatchesGenerated: false,
+                    isEliminated: false,
+                    tournamentCompleted: false,
+                    generatingKnockout: false
+                };
+                saveState();
+                showScreen('menu');
+                renderTeamList();
+                renderTournament();
+                renderBracket();
+                updateMenu();
+            }
+        }
+
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        loadState();
+        renderTeamList();
+        renderTournament();
+        renderBracket();
+        updateMenu();
+
+        const savedScreen = localStorage.getItem('enl256_screen') || 'menu';
+        showScreen(savedScreen);
+
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const screen = btn.textContent.includes('Главная') ? 'menu' :
+                               btn.textContent.includes('Команды') ? 'teams' :
+                               btn.textContent.includes('Турнир') ? 'tournament' : null;
+                if (screen) localStorage.setItem('enl256_screen', screen);
+            });
+        });
+
+        console.log('⚽ ЕНЛ 256 загружена!');
+        console.log(`📊 ${teams.length} команд, ${russianTeamIds.length} российских команд`);
+    </script>
+</body>
+</html>
